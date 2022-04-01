@@ -74,6 +74,17 @@ def get_dataset_psd(x_raw, fs, max_freq=500):
     """Calculate PSD on observed time series (rows of array)"""
     x_psd = list()
     for idx in range(x_raw.shape[0]):
-        f, Pxx_den = signal.welch(x_raw[idx, :], fs)
-        x_psd.append(Pxx_den[f<max_freq])
-    return np.vstack(np.log(x_psd))
+        f, Pxx_den = signal.periodogram(x_raw[idx, :], fs)
+        x_psd.append(Pxx_den[(f<max_freq)&(f>0)])
+    return np.vstack(np.log(x_psd)), f[(f<max_freq)&(f>0)]
+
+
+def get_dataset_peaks(x_raw, tstop=500):
+    """Return max/min peak amplitude and timing"""
+    ts = np.linspace(0, tstop, x_raw.shape[1])
+
+    peak_features = np.vstack(
+        [np.max(x_raw,axis=1), ts[np.argmax(x_raw, axis=1)],
+         np.min(x_raw,axis=1), ts[np.argmin(x_raw, axis=1)]]).T
+
+    return peak_features
