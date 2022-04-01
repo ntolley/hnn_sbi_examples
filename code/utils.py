@@ -1,6 +1,11 @@
 import numpy as np
 from scipy.integrate import odeint
 from scipy import signal
+import torch
+
+from sbi import utils as sbi_utils
+from sbi import analysis as sbi_analysis
+from sbi import inference as sbi_inference
 
 def linear_scale_forward(value, bounds, constrain_value=True):
     """Scale value in range (0,1) to range bounds"""
@@ -39,7 +44,7 @@ def run_rc_sim(theta_dict):
 
     amp1 = theta_dict['amp1']
     amp2 = theta_dict['amp2']
-    pulse_diff = theta_dict['pulse_diff']
+    pulse_diff = theta_dict['latency']
 
     y0 = 0
     v_out = odeint(dVdt, y0, t_vec, args=(pulse_diff, amp1, amp2), hmax=dt)
@@ -70,7 +75,7 @@ def dVdt(V, t, pulse_diff, amp1, amp2):
         
     return (E - V + R * I) / tau
 
-def get_dataset_psd(x_raw, fs, max_freq=500):
+def get_dataset_psd(x_raw, fs, max_freq=200):
     """Calculate PSD on observed time series (rows of array)"""
     x_psd = list()
     for idx in range(x_raw.shape[0]):
@@ -88,3 +93,23 @@ def get_dataset_peaks(x_raw, tstop=500):
          np.min(x_raw,axis=1), ts[np.argmin(x_raw, axis=1)]]).T
 
     return peak_features
+
+def load_posterior(state_dict, x_infer, theta_infer, prior, embedding_net):    
+    neural_posterior = sbi_utils.posterior_nn(model='mdn', embedding_net=embedding_net)
+    inference = sbi_inference.SNPE(prior=prior, density_estimator=neural_posterior, show_progress_bars=True, device=device)
+    inference.append_simulations(theta_infer, x_infer, proposal=prior)
+
+    nn_posterior = inference.train(num_atoms=10, training_batch_size=5000, use_combined_loss=True, discard_prior_samples=True, max_num_epochs=2, show_train_summary=False)
+    nn_posterior.zero_grad()
+    nn_posterior.load_state_dict(state_dict)
+
+    posterior = inference.build_posterior(nn_posterior)
+    return posterior
+
+class UniformPrior(sbi_utils.BoxUniform):
+    def __init__(self, parameters):
+        self.parameters = parameters
+        low = len(parameters)*[0]
+        high = len(parameters)*[1]
+        super().__init__(low=torch.tensor(low, dtype=torch.float32),
+                         high=torch.tensor(high, dtype=torch.float32))
