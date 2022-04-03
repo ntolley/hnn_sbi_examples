@@ -22,6 +22,10 @@ with open(f'{save_path}/prior_dict.pkl', 'wb') as f:
 prior = UniformPrior(parameters=list(prior_dict.keys()))
 theta_samples = prior.sample((num_sims,))
 
+sim_metadata = {'tstop': 80, 'dt': 0.5}
+with open(f'{save_path}/sim_metadata.pkl', 'wb') as f:
+    pickle.dump(sim_metadata, f)
+
 v_list = list()
 for sim_idx in range(num_sims):
     if sim_idx % 1000 == 0:
@@ -30,7 +34,7 @@ for sim_idx in range(num_sims):
     theta_dict = {param_name: param_dict['scale_func'](thetai[idx].numpy(), param_dict['bounds']) for 
                   idx, (param_name, param_dict) in enumerate(prior_dict.items())}
 
-    v_out = run_rc_sim(theta_dict)
+    v_out = run_rc_sim(theta_dict, tstop=sim_metadata['tstop'], dt=sim_metadata['dt'])
     v_list.append(v_out)
 
 # Save simulation output
@@ -40,5 +44,5 @@ theta_sims = theta_samples.numpy()
 x_name = f'{save_path}/x_sbi.npy'
 theta_name = f'{save_path}/theta_sbi.npy'
 np.save(x_name, x_sims)
-np.save(x_name, theta_sims)
+np.save(theta_name, theta_sims)
 

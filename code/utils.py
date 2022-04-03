@@ -7,6 +7,8 @@ from sbi import utils as sbi_utils
 from sbi import analysis as sbi_analysis
 from sbi import inference as sbi_inference
 
+device = 'cpu'
+
 def linear_scale_forward(value, bounds, constrain_value=True):
     """Scale value in range (0,1) to range bounds"""
     if constrain_value:
@@ -37,9 +39,7 @@ def log_scale_array(value, bounds, constrain_value=True):
         [log_scale_forward(value[:, idx], bounds[idx], constrain_value) for 
          idx in range(len(bounds))]).T
 
-def run_rc_sim(theta_dict):    
-    tstop = 80
-    dt = 0.5
+def run_rc_sim(theta_dict, tstop=80, dt=0.5):    
     t_vec = np.linspace(0, tstop, np.round(tstop/dt).astype(int))
 
     amp1 = theta_dict['amp1']
@@ -95,7 +95,7 @@ def get_dataset_peaks(x_raw, tstop=500):
     return peak_features
 
 def load_posterior(state_dict, x_infer, theta_infer, prior, embedding_net):    
-    neural_posterior = sbi_utils.posterior_nn(model='mdn', embedding_net=embedding_net)
+    neural_posterior = sbi_utils.posterior_nn(model='maf', embedding_net=embedding_net)
     inference = sbi_inference.SNPE(prior=prior, density_estimator=neural_posterior, show_progress_bars=True, device=device)
     inference.append_simulations(theta_infer, x_infer, proposal=prior)
 
