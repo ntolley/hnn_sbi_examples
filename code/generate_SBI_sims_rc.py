@@ -1,5 +1,5 @@
 import numpy as np
-import pickle
+import dill
 import torch
 from utils import (linear_scale_forward, UniformPrior, run_rc_sim)
 
@@ -17,14 +17,11 @@ prior = UniformPrior(parameters=list(prior_dict.keys()))
 theta_samples = prior.sample((num_sims,))
 
 with open(f'{save_path}/prior_dict.pkl', 'wb') as f:
-    pickle.dump(prior_dict, f)
-
-prior = UniformPrior(parameters=list(prior_dict.keys()))
-theta_samples = prior.sample((num_sims,))
+    dill.dump(prior_dict, f)
 
 sim_metadata = {'tstop': 80, 'dt': 0.5}
 with open(f'{save_path}/sim_metadata.pkl', 'wb') as f:
-    pickle.dump(sim_metadata, f)
+    dill.dump(sim_metadata, f)
 
 v_list = list()
 for sim_idx in range(num_sims):
