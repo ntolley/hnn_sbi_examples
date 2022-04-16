@@ -1,4 +1,5 @@
 import torch
+import os
 import numpy as np
 
 from sbi import inference as sbi_inference
@@ -8,6 +9,7 @@ from utils import (linear_scale_forward,
 import pickle
 import dill
 from sbi import utils as sbi_utils
+from sklearn.decomposition import PCA
 
 from numpy.random import default_rng
 rng_seed = 123
@@ -43,6 +45,11 @@ dt = sim_metadata['dt'] # Sampling interval used for simulation
 fs = (1/dt) * 1e3
 x_psd_noise, _ = get_dataset_psd(x_orig_noise, fs=fs)
 
+pca = PCA(n_components=10, random_state=rng_seed)
+pca.fit(x_orig_noise)
+x_pca_noise = pca.transform(x_orig_noise)
+
+
 posterior_metadata = {'rng_seed': rng_seed, 'noise_amp': noise_amp, 'n_sims': n_sims, 'fs': fs}
 posterior_metadata_save_label = f'{data_path}/posteriors/rc_posterior_metadata.pkl'
 with open(posterior_metadata_save_label, 'wb') as output_file:
@@ -51,14 +58,18 @@ with open(posterior_metadata_save_label, 'wb') as output_file:
 input_type_list = {'raw_waveform_noise': {
                        'x_train': x_orig_noise, 'embedding_func': torch.nn.Identity,
                        'embedding_dict': dict()},
+                   'pca_noise': {
+                       'x_train': x_pca_noise, 'embedding_func': torch.nn.Identity,
+                       'embedding_dict': dict()},
                    'peak_noise': {
                        'x_train': x_peak_noise, 'embedding_func': torch.nn.Identity,
-                       'embedding_dict': dict(),
-                   },
+                       'embedding_dict': dict()},
                    'psd_noise': {
                        'x_train': x_psd_noise, 'embedding_func': torch.nn.Identity,
-                       'embedding_dict': dict()
-                   }}
+                       'embedding_dict': dict()},
+                   'psd_peak_noise': {
+                       'x_train': np.hstack([x_psd_noise, x_peak_noise]), 'embedding_func': torch.nn.Identity,
+                       'embedding_dict': dict()}}
 
 # Train a posterior for each input type and save state_dict
 for input_type, input_dict in input_type_list.items():
@@ -92,3 +103,5 @@ for input_type, input_dict in input_type_list.items():
     posterior_save_label = f'{data_path}/posteriors/rc_posterior_dicts.pkl'
     with open(posterior_save_label, 'wb') as output_file:
         dill.dump(posterior_dict, output_file)
+        
+os.system('scancel -u ntolley')
