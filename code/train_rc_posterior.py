@@ -1,6 +1,7 @@
 import torch
 import os
 import numpy as np
+from functools import partial
 
 from sbi import inference as sbi_inference
 from utils import (linear_scale_forward,
@@ -64,7 +65,7 @@ with open(posterior_metadata_save_label, 'wb') as output_file:
 
 input_type_list = {'raw_waveform': {
                        'embedding_func': torch.nn.Identity,
-                       'embedding_dict': dict(), 'feature_func': torch.nn.Identity},
+                       'embedding_dict': dict(), 'feature_func': lambda x: x},
                    'pca5': {
                        'embedding_func': torch.nn.Identity,
                        'embedding_dict': dict(), 'feature_func': pca5.transform},
