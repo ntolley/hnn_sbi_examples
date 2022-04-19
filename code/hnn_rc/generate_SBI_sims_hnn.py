@@ -1,18 +1,26 @@
+import sys
+#sys.path.append('../')
+import os
+#abs_path = os.path.abspath('../')
+#sys.path.append(abs_path)
 import numpy as np
 import dill
 import torch
 from functools import partial
-from utils import (linear_scale_forward, UniformPrior, simulator_hnn)
+from utils import (linear_scale_forward, log_scale_forward, UniformPrior,
+                   simulator_hnn, hnn_rc_param_function, load_prerun_simulations)
 from dask_jobqueue import SLURMCluster
+import dask
 from hnn_core import jones_2009_model
 from distributed import Client
+import glob
 
 device = 'cpu'
 
 # Set up cluster and reserve resources
 cluster = SLURMCluster(
     cores=32, processes=32, queue='compute', memory="256GB", walltime="3:00:00",
-    job_extra=['-A csd403', '--nodes=1'], log_directory=Path.cwd() /'slurm_out')
+    job_extra=['-A csd403', '--nodes=1'], log_directory=os.getcwd() + '/slurm_out')
 
 client = Client(cluster)
 print(client.dashboard_link)
@@ -27,12 +35,12 @@ net.clear_connectivity()
 # Number of simulations to run when sampling from prior
 num_sims = 110_000
    
-save_path = '../data/hnn_rc/sbi_sims'
-temp_path = '../data/hnn_rc/temp'
+save_path = '../../data/hnn_rc/sbi_sims'
+temp_path = '../../data/hnn_rc/temp'
     
-prior_dict = {'prox_weight': {'bounds': (-4, -3), 'scale_func': log_scale_forward},
-              'dist_weight': {'bounds': (-4, -3), 'scale_func': log_scale_forward}, 
-              'latency': {'bounds': (-75, 75), 'scale_func': linear_scale_forward}}
+prior_dict = {'prox_weight': {'bounds': (-4, -3), 'rescale_function': log_scale_forward},
+              'dist_weight': {'bounds': (-4, -3), 'rescale_function': log_scale_forward}, 
+              'latency': {'bounds': (-75, 75), 'rescale_function': linear_scale_forward}}
 
 # Create uniform prior and sample
 prior = UniformPrior(parameters=list(prior_dict.keys()))
@@ -49,8 +57,8 @@ with open(f'{save_path}/sim_metadata.pkl', 'wb') as f:
 # Create batch simulation function
 def batch(seq, theta_samples, save_path):
     # create simulator object, rescale function transforms (0,1) to range specified in prior_dict
-    simulator = partial(simulator_hnn, prior_dict=prior_dict, param_function=param_function,
-                        rescale_function=scale_func_list, network_model=net)
+    simulator = partial(simulator_hnn, prior_dict=prior_dict, param_function=hnn_rc_param_function,
+                        network_model=net)
 
     # Create lazy list of tasks
     res_list= []
@@ -72,20 +80,21 @@ def batch(seq, theta_samples, save_path):
 for i in range(0, num_sims, step_size):
     print(i)
     if i + step_size < theta_samples.shape[0]:
-        batch(list(range(i, i + step_size)), theta_samples[i:i + step_size, :], temp_path_save)
+        batch(list(range(i, i + step_size)), theta_samples[i:i + step_size, :], temp_path)
     else:
         print(i, theta_samples.shape[0])
-        batch(list(range(i, theta_samples.shape[0])), theta_samples[i:, :], temp_path_save)
+        batch(list(range(i, theta_samples.shape[0])), theta_samples[i:, :], temp_path)
 
 # Load simulations into single array, save output, and remove small small files
-x_orig, theta_orig = load_prerun_simulations(str(temp_path_save) + '/')
-x_name = f'{save_path}/dpl_sim_uniform.npy'
-theta_name = f'{save_path}/theta_sim_uniform.npy'
+x_orig, theta_orig = load_prerun_simulations(f'{temp_path}/')
+x_name = f'{save_path}/x_sbi.npy'
+theta_name = f'{save_path}/theta_sbi.npy'
 np.save(x_name, x_orig)
 np.save(theta_name, theta_orig)
 
-files = glob.glob(str(temp_path_save) + '/*')
+files = glob.glob(str(temp_path) + '/*')
 for f in files:
     os.remove(f)
 
 
+#os.system('scancel -u ntolley')
