@@ -75,13 +75,16 @@ def dVdt(V, t, pulse_diff, amp1, amp2):
         
     return (E - V + R * I) / tau
 
-def get_dataset_psd(x_raw, fs, max_freq=200):
+def get_dataset_psd(x_raw, fs, return_freq=True, max_freq=200):
     """Calculate PSD on observed time series (rows of array)"""
     x_psd = list()
     for idx in range(x_raw.shape[0]):
         f, Pxx_den = signal.periodogram(x_raw[idx, :], fs)
         x_psd.append(Pxx_den[(f<max_freq)&(f>0)])
-    return np.vstack(np.log(x_psd)), f[(f<max_freq)&(f>0)]
+    if return_freq:
+        return np.vstack(np.log(x_psd)), f[(f<max_freq)&(f>0)]
+    else:
+        return np.vstack(np.log(x_psd))
 
 
 def get_dataset_peaks(x_raw, tstop=500):
@@ -113,3 +116,145 @@ class UniformPrior(sbi_utils.BoxUniform):
         high = len(parameters)*[1]
         super().__init__(low=torch.tensor(low, dtype=torch.float32),
                          high=torch.tensor(high, dtype=torch.float32))
+        
+        
+# __Simulation__
+class HNNSimulator:
+    """Simulator class to run HNN simulations"""
+    
+    def __init__(self, prior_dict, param_function, rescale_function, network_model,
+                 return_objects):
+        """
+        Parameters
+        ----------
+        prior_dict: dict 
+            Dictionary storing parameters to be updated as {name: (lower_bound, upper_bound)}
+            where pameter values passed in the __call__() are scaled between the lower and upper
+            bounds
+        param_function: function definition
+            Function which accepts theta_dict and updates simulation parameters
+        rescale_function: function definition
+            Function which scales parameter values passed in __call__() to bounds in prior_dict
+            i.e linear or log scale.
+        network_model: function definiton
+            Function defined in network_models.py of hnn_core which builds the desired Network to
+            be simulated.
+        return_objects: bool
+            If true, returns tuple of (Network, Dipole) objects. If False, a preprocessed time series
+            of the aggregate current dipole (Dipole.data['agg']) is returned.
+        """
+        self.dt = 0.5  # Used for faster simulations, default.json uses 0.025 ms
+        self.tstop = 350  # ms
+        self.prior_dict = prior_dict
+        self.param_function = param_function
+        self.rescale_function = rescale_function
+        self.return_objects = return_objects
+        self.network_model = network_model
+
+    def __call__(self, theta_dict):
+        """
+        Parameters
+        ----------
+        theta_dict: dict
+            Dictionary indexing parameter values to be updated. Keys must match those defined
+            in prior_dict.
+        """        
+        assert len(theta_dict) == len(self.prior_dict)
+        assert theta_dict.keys() == self.prior_dict.keys()
+
+        # instantiate the network object -- only connectivity params matter
+        net = self.network_model.copy()
+        
+        # Update parameter values from prior dict
+        self.param_function(net, theta_dict)
+
+        # simulate dipole over one trial
+        dpl = simulate_dipole(net, tstop=self.tstop, dt=self.dt, n_trials=1, postproc=True)
+
+        # get the signal output, downsample by factor of 50
+        x = torch.tensor(dpl[0].copy().smooth(20).data['agg'][::3], dtype=torch.float32)
+        
+        if self.return_objects:
+            return net, dpl
+        else:
+            del net, dpl
+            return x      
+
+def simulator_hnn(theta, prior_dict, param_function, rescale_function, network_model=jones_2009_model,
+                  return_objects=False):
+    """Helper function to run simulations with HNN class
+
+    Parameters
+    ----------
+    theta: array-like
+        Unscaled paramter values in range of (0,1) sampled from prior distribution
+    prior_dict: dict 
+        Dictionary storing parameters to be updated as {name: (lower_bound, upper_bound)}
+        where pameter values passed in the __call__() are scaled between the lower and upper
+        bounds
+    param_function: function definition
+        Function which accepts theta_dict and updates simulation parameters
+    rescale_function: function definition
+        Function which scales parameter values passed in __call__() to bounds in prior_dict
+        i.e linear or log scale.
+    network_model: function definiton
+        Function defined in network_models.py of hnn_core which builds the desired Network to
+        be simulated.
+    return_objects: bool
+        If true, returns tuple of (Network, Dipole) objects. If False, a preprocessed time series
+        of the aggregate current dipole (Dipole.data['agg']) is returned.
+    """
+    
+    # Convert rescale function to list if different for each parameter
+    if isinstance(rescale_function, list):
+        if theta.ndim == 1:
+            assert len(rescale_function) == theta.shape[0]
+        else:
+            assert len(rescale_function) == theta.shape[1]
+    elif callable(rescale_function):
+        rescale_function = [rescale_function for _ in range(len(theta))]
+    else:
+        raise TypeError
+
+    # create simulator
+    hnn = HNNSimulator(prior_dict, param_function, rescale_function, network_model, return_objects)
+
+    # handle when just one theta
+    if theta.ndim == 1:
+        return simulator_hnn(theta.view(1, -1), prior_dict, param_function, rescale_function,
+                             return_objects=return_objects, network_model=network_model)
+
+    # loop through different values of theta
+    x = list()
+    for idx, thetai in enumerate(theta):
+        theta_dict = {param_name: rescale_function[idx](thetai[idx].numpy(), bounds) for 
+                      idx, (param_name, bounds) in enumerate(prior_dict.items())}
+        
+        print(theta_dict)
+        xi = hnn(theta_dict)
+        x.append(xi)
+
+    # Option to return net and dipole objects or just the 
+    if return_objects:
+        return x
+    else:
+        x = torch.stack(x)
+        return torch.tensor(x, dtype=torch.float32)
+    
+def hnn_rc_param_function(net, theta_dict):    
+    synaptic_delays = {'L5_pyramidal': 0.1}
+
+    #theta_dict = {'prox_weight': 0.001, 'dist_weight': 0.001, 'latency': -20}
+    weights_ampa_prox = {'L5_pyramidal': theta_dict['prox_weight']}
+    weights_ampa_dist = {'L5_pyramidal': theta_dict['dist_weight']}
+    prox_start = 200.0
+    dist_start = prox_start + theta_dict['latency']
+
+    net.add_evoked_drive(
+        'prox', mu=prox_start, sigma=0.0, numspikes=1, weights_ampa=weights_ampa_dist, location='proximal',
+        synaptic_delays=synaptic_delays)
+
+
+    net.add_evoked_drive(
+        'dist', mu=dist_start, sigma=0.0, numspikes=1, weights_ampa=weights_ampa_dist, location='distal',
+        synaptic_delays=synaptic_delays)
