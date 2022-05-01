@@ -245,12 +245,15 @@ def hnn_rc_param_function(net, theta_dict):
         synaptic_delays=synaptic_delays)
     
     
-def load_prerun_simulations(data_path, downsample=1, save_name=None, save_data=False):
+def load_prerun_simulations(x_files, theta_files, downsample=1, save_name=None, save_data=False):
     "Aggregate simulation batches into single array"
     
     # TODO, add check that sim number suffix matches between dpl and theta using regex - Nick
-    x_files = sorted(glob.glob(data_path + '*x*'))
-    theta_files = sorted(glob.glob(data_path + '*theta*'))
+    #x_files = sorted(glob.glob(data_path + 'x*.npy'))
+    #theta_files = sorted(glob.glob(data_path + 'theta*.npy'))
+    
+    print(x_files)
+    print(theta_files)
     
     x_all = np.vstack([np.load(x_files[file_idx])[:,::downsample] for file_idx in range(len(x_files))])
     theta_all = np.vstack([np.load(theta_files[file_idx]) for file_idx in range(len(theta_files))])
