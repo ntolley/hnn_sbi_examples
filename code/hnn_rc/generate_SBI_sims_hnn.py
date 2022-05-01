@@ -1,8 +1,5 @@
 import sys
-#sys.path.append('../')
 import os
-#abs_path = os.path.abspath('../')
-#sys.path.append(abs_path)
 import numpy as np
 import dill
 import torch
@@ -77,16 +74,23 @@ def batch(seq, theta_samples, save_path):
     np.save(theta_name, theta_samples.detach().cpu().numpy())
 
 # Generate simulations
+seq_list = list()
 for i in range(0, num_sims, step_size):
     print(i)
+    seq = list(range(i, i + step_size))
     if i + step_size < theta_samples.shape[0]:
-        batch(list(range(i, i + step_size)), theta_samples[i:i + step_size, :], temp_path)
+        batch(seq, theta_samples[i:i + step_size, :], temp_path)
     else:
         print(i, theta_samples.shape[0])
-        batch(list(range(i, theta_samples.shape[0])), theta_samples[i:, :], temp_path)
+        seq = list(range(i, theta_samples.shape[0]))
+        batch(seq, theta_samples[i:, :], temp_path)
+    seq_list.append(seq)
 
 # Load simulations into single array, save output, and remove small small files
-x_orig, theta_orig = load_prerun_simulations(f'{temp_path}/')
+x_files = [f'{temp_path}/x_sbi{seq[0]}-{seq[-1]}.npy' for seq in seq_list]
+theta_files = [f'{temp_path}/theta_sbi{seq[0]}-{seq[-1]}.npy' for seq in seq_list]
+
+x_orig, theta_orig = load_prerun_simulations(x_files, theta_files)
 x_name = f'{save_path}/x_sbi.npy'
 theta_name = f'{save_path}/theta_sbi.npy'
 np.save(x_name, x_orig)
