@@ -7,6 +7,8 @@ from sbi import utils as sbi_utils
 from sbi import analysis as sbi_analysis
 from sbi import inference as sbi_inference
 
+from hnn_core import jones_2009_model
+
 device = 'cpu'
 
 def linear_scale_forward(value, bounds, constrain_value=True):
@@ -122,7 +124,7 @@ class UniformPrior(sbi_utils.BoxUniform):
 class HNNSimulator:
     """Simulator class to run HNN simulations"""
     
-    def __init__(self, prior_dict, param_function, rescale_function, network_model,
+    def __init__(self, prior_dict, param_function, network_model,
                  return_objects):
         """
         Parameters
@@ -133,9 +135,6 @@ class HNNSimulator:
             bounds
         param_function: function definition
             Function which accepts theta_dict and updates simulation parameters
-        rescale_function: function definition
-            Function which scales parameter values passed in __call__() to bounds in prior_dict
-            i.e linear or log scale.
         network_model: function definiton
             Function defined in network_models.py of hnn_core which builds the desired Network to
             be simulated.
@@ -147,7 +146,6 @@ class HNNSimulator:
         self.tstop = 350  # ms
         self.prior_dict = prior_dict
         self.param_function = param_function
-        self.rescale_function = rescale_function
         self.return_objects = return_objects
         self.network_model = network_model
 
@@ -180,7 +178,7 @@ class HNNSimulator:
             del net, dpl
             return x      
 
-def simulator_hnn(theta, prior_dict, param_function, rescale_function, network_model=jones_2009_model,
+def simulator_hnn(theta, prior_dict, param_function, network_model=jones_2009_model,
                   return_objects=False):
     """Helper function to run simulations with HNN class
 
@@ -194,9 +192,6 @@ def simulator_hnn(theta, prior_dict, param_function, rescale_function, network_m
         bounds
     param_function: function definition
         Function which accepts theta_dict and updates simulation parameters
-    rescale_function: function definition
-        Function which scales parameter values passed in __call__() to bounds in prior_dict
-        i.e linear or log scale.
     network_model: function definiton
         Function defined in network_models.py of hnn_core which builds the desired Network to
         be simulated.
@@ -204,17 +199,6 @@ def simulator_hnn(theta, prior_dict, param_function, rescale_function, network_m
         If true, returns tuple of (Network, Dipole) objects. If False, a preprocessed time series
         of the aggregate current dipole (Dipole.data['agg']) is returned.
     """
-    
-    # Convert rescale function to list if different for each parameter
-    if isinstance(rescale_function, list):
-        if theta.ndim == 1:
-            assert len(rescale_function) == theta.shape[0]
-        else:
-            assert len(rescale_function) == theta.shape[1]
-    elif callable(rescale_function):
-        rescale_function = [rescale_function for _ in range(len(theta))]
-    else:
-        raise TypeError
 
     # create simulator
     hnn = HNNSimulator(prior_dict, param_function, rescale_function, network_model, return_objects)
@@ -227,8 +211,8 @@ def simulator_hnn(theta, prior_dict, param_function, rescale_function, network_m
     # loop through different values of theta
     x = list()
     for idx, thetai in enumerate(theta):
-        theta_dict = {param_name: rescale_function[idx](thetai[idx].numpy(), bounds) for 
-                      idx, (param_name, bounds) in enumerate(prior_dict.items())}
+        theta_dict = {param_name: param_dict['rescale_function'](thetai[idx].numpy(), param_dict['bounds']) for 
+                      param_name, param_dict in prior_dict.items()}
         
         print(theta_dict)
         xi = hnn(theta_dict)
