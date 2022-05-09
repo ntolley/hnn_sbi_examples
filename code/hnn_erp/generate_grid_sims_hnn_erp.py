@@ -4,8 +4,8 @@ import numpy as np
 import dill
 import torch
 from functools import partial
-from utils import (linear_scale_forward, log_scale_forward, UniformPrior,
-                   simulator_hnn, hnn_rc_param_function, load_prerun_simulations)
+from utils import (log_scale_forward, UniformPrior,
+                   simulator_hnn, hnn_erp_param_function, load_prerun_simulations)
 from dask_jobqueue import SLURMCluster
 import dask
 from hnn_core import jones_2009_model
@@ -30,8 +30,8 @@ client.cluster.scale(num_cores)
 net = jones_2009_model()
 net.clear_connectivity()
 
-save_path = '../../data/hnn_rc/sbi_sims'
-temp_path = '../../data/hnn_rc/temp'
+save_path = '../../data/hnn_erp/sbi_sims'
+temp_path = '../../data/hnn_erp/temp'
     
 with open(f'{save_path}/prior_dict.pkl', 'rb') as output_file:
     prior_dict = dill.load(output_file)
@@ -43,14 +43,14 @@ n_params = len(prior_dict)
 # Evenly spaced grid on (0,1) for theta samples (mapped to bounds defined in prior_dict during simulation)
 n_points = 10
 sample_points = [np.linspace(1e-10,1, n_points).tolist() for _ in range(n_params)]
-theta_samples = list(product(sample_points[0], sample_points[1], sample_points[2]))
+theta_samples = list(product(sample_points[0], sample_points[1], sample_points[2], sample_points[3]))
 theta_samples = torch.tensor(theta_samples)
 num_sims = theta_samples.shape[0]
 
 # Create batch simulation function
 def batch(seq, theta_samples, save_path):
     # create simulator object, rescale function transforms (0,1) to range specified in prior_dict
-    simulator = partial(simulator_hnn, prior_dict=prior_dict, param_function=hnn_rc_param_function,
+    simulator = partial(simulator_hnn, prior_dict=prior_dict, param_function=hnn_erp_param_function,
                         network_model=net)
 
     # Create lazy list of tasks

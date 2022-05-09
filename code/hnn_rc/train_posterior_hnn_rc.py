@@ -39,7 +39,7 @@ x_orig, theta_orig = x_orig[:n_sims, :], theta_orig[:n_sims, :]
 
 #Number of samples to set to zero
 zero_samples = 50
-x_orig[:, :zero_samples] = np.zeros(x_orig[:, :zero_samples].shape)
+x_orig[:, :zero_samples] = np.repeat(x_orig[:, zero_samples], zero_samples).reshape(x_orig.shape[0], zero_samples)
 
 # Add noise for regularization
 noise_amp = 0.01
@@ -68,16 +68,7 @@ posterior_metadata_save_label = f'{data_path}/posteriors/hnn_rc_posterior_metada
 with open(posterior_metadata_save_label, 'wb') as output_file:
         dill.dump(posterior_metadata, output_file)
 
-input_type_list = {'raw_waveform': {
-                       'embedding_func': torch.nn.Identity,
-                       'embedding_dict': dict(), 'feature_func': lambda x: x},
-                   'pca5': {
-                       'embedding_func': torch.nn.Identity,
-                       'embedding_dict': dict(), 'feature_func': pca5.transform},
-                   'pca10': {
-                       'embedding_func': torch.nn.Identity,
-                       'embedding_dict': dict(), 'feature_func': pca10.transform},
-                   'pca30': {
+input_type_list = {'pca30': {
                        'embedding_func': torch.nn.Identity,
                        'embedding_dict': dict(), 'feature_func': pca30.transform},
                    'peak': {
