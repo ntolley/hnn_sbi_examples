@@ -60,8 +60,8 @@ limits = list(prior_dict.values())
 x_orig, theta_orig = np.load(f'{data_path}/sbi_sims/x_sbi.npy'), np.load(f'{data_path}/sbi_sims/theta_sbi.npy')
 x_cond, theta_cond = np.load(f'{data_path}/sbi_sims/x_grid.npy'), np.load(f'{data_path}/sbi_sims/theta_grid.npy')
 
-x_orig[:, :zero_samples] = np.zeros(x_orig[:, :zero_samples].shape)
-x_cond[:, :zero_samples] = np.zeros(x_cond[:, :zero_samples].shape)
+x_orig[:, :zero_samples] = np.repeat(x_orig[:, zero_samples], zero_samples).reshape(x_orig.shape[0], zero_samples)
+x_cond[:, :zero_samples] = np.repeat(x_cond[:, zero_samples], zero_samples).reshape(x_cond.shape[0], zero_samples)
 
 load_info = {name: {'x_train': posterior_dict['input_dict']['feature_func'](x_orig), 
                     'x_cond': posterior_dict['input_dict']['feature_func'](x_cond)}

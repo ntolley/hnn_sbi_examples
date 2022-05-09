@@ -230,14 +230,17 @@ def hnn_erp_param_function(net, theta_dict):
         cell_specific=cell_specific, synaptic_delays=synaptic_delays_prox, event_seed=4)
     
     # Update connection weights according to theta_dict
-    l5dend_conn_idx = pick_connection(net, src_gids='L2_basket', target_gids='L5_pyramidal', receptor='gabaa', loc='distal')[0]
-    net.connectivity[l5dend_conn_idx]['nc_dict']['A_weight'] = theta_dict['l5dend_inh']
+    dist_inh_idx = pick_connection(net, src_gids='L2_basket', target_gids='L5_pyramidal', receptor='gabaa', loc='distal')[0]
+    net.connectivity[dist_inh_idx]['nc_dict']['A_weight'] = theta_dict['dist_inh']
     
-    l5soma_conn_idx = pick_connection(net, src_gids='L5_basket', target_gids='L5_pyramidal', receptor='gabaa', loc='soma')[0]
-    net.connectivity[l5soma_conn_idx]['nc_dict']['A_weight'] = theta_dict['l5soma_inh']
+    prox_inh_idx = pick_connection(net, src_gids='L5_basket', target_gids='L5_pyramidal', receptor='gabaa', loc='soma')[0]
+    net.connectivity[prox_inh_idx]['nc_dict']['A_weight'] = theta_dict['prox_inh']
 
-    l2soma_conn_idx = pick_connection(net, src_gids='L2_basket', target_gids='L2_pyramidal', receptor='gabaa', loc='soma')[0]
-    net.connectivity[l2soma_conn_idx]['nc_dict']['A_weight'] = theta_dict['l2soma_inh']
+    dist_exc_idx = pick_connection(net, src_gids='L2_pyramidal', target_gids='L5_pyramidal', receptor='ampa', loc='distal')[0]
+    net.connectivity[dist_exc_idx]['nc_dict']['A_weight'] = theta_dict['dist_exc']
+    
+    prox_exc_idx = pick_connection(net, src_gids='L5_pyramidal', target_gids='L5_pyramidal', receptor='ampa', loc='proximal')[0]
+    net.connectivity[prox_exc_idx]['nc_dict']['A_weight'] = theta_dict['prox_exc']
    
         
 def load_prerun_simulations(x_files, theta_files, downsample=1, save_name=None, save_data=False):

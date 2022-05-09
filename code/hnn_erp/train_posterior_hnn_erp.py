@@ -24,7 +24,7 @@ n_sims = 100_000
 posterior_dict = dict()
 posterior_dict_training_data = dict()
 
-data_path = '../../data/hnn_rc'
+data_path = '../../data/hnn_erp'
 
 prior_dict = pickle.load(open(f'{data_path}/sbi_sims/prior_dict.pkl', 'rb'))
 sim_metadata = pickle.load(open(f'{data_path}/sbi_sims/sim_metadata.pkl', 'rb'))
@@ -38,11 +38,10 @@ x_orig, theta_orig = np.load(f'{data_path}/sbi_sims/x_sbi.npy'), np.load(f'{data
 x_orig, theta_orig = x_orig[:n_sims, :], theta_orig[:n_sims, :]
 
 #Number of samples to set to zero
-zero_samples = 50
-x_orig[:, :zero_samples] = np.zeros(x_orig[:, :zero_samples].shape)
+x_orig = x_orig[:,0,:]
 
 # Add noise for regularization
-noise_amp = 0.01
+noise_amp = 1.0
 noise = np.random.random(x_orig.shape) * noise_amp - (noise_amp / 2)
 x_orig_noise = x_orig + noise
 
@@ -54,30 +53,15 @@ def psd_peak_func(x_raw, fs):
     x_peak = get_dataset_peaks(x_raw, tstop=sim_metadata['tstop'])
     return np.hstack([x_psd, x_peak])
 
-pca5 = PCA(n_components=5, random_state=rng_seed)
-pca5.fit(x_orig_noise)
-
-pca10 = PCA(n_components=10, random_state=rng_seed)
-pca10.fit(x_orig_noise)
-
 pca30 = PCA(n_components=30, random_state=rng_seed)
 pca30.fit(x_orig_noise)
 
-posterior_metadata = {'rng_seed': rng_seed, 'noise_amp': noise_amp, 'n_sims': n_sims, 'fs': fs, 'zero_samples': zero_samples}
-posterior_metadata_save_label = f'{data_path}/posteriors/hnn_rc_posterior_metadata.pkl'
+posterior_metadata = {'rng_seed': rng_seed, 'noise_amp': noise_amp, 'n_sims': n_sims, 'fs': fs}
+posterior_metadata_save_label = f'{data_path}/posteriors/hnn_erp_posterior_metadata.pkl'
 with open(posterior_metadata_save_label, 'wb') as output_file:
         dill.dump(posterior_metadata, output_file)
 
-input_type_list = {'raw_waveform': {
-                       'embedding_func': torch.nn.Identity,
-                       'embedding_dict': dict(), 'feature_func': lambda x: x},
-                   'pca5': {
-                       'embedding_func': torch.nn.Identity,
-                       'embedding_dict': dict(), 'feature_func': pca5.transform},
-                   'pca10': {
-                       'embedding_func': torch.nn.Identity,
-                       'embedding_dict': dict(), 'feature_func': pca10.transform},
-                   'pca30': {
+input_type_list = {'pca30': {
                        'embedding_func': torch.nn.Identity,
                        'embedding_dict': dict(), 'feature_func': pca30.transform},
                    'peak': {
@@ -111,8 +95,8 @@ for input_type, input_dict in input_type_list.items():
                                 'input_dict': input_dict}
 
     # Save intermediate progress
-    posterior_save_label = f'{data_path}/posteriors/hnn_rc_posterior_dicts.pkl'
+    posterior_save_label = f'{data_path}/posteriors/hnn_erp_posterior_dicts.pkl'
     with open(posterior_save_label, 'wb') as output_file:
         dill.dump(posterior_dict, output_file)
         
-os.system('scancel -u ntolley')
+#os.system('scancel -u ntolley')

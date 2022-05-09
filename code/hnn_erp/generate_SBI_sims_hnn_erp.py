@@ -34,9 +34,10 @@ num_sims = 110_000
 save_path = '../../data/hnn_erp/sbi_sims'
 temp_path = '../../data/hnn_erp/temp'
     
-prior_dict = {'l5dend_inh': {'bounds': (-5, 1), 'rescale_function': log_scale_forward},
-              'l5soma_inh': {'bounds': (-5, 1), 'rescale_function': log_scale_forward}, 
-              'l2soma_inh': {'bounds': (-5, 1), 'rescale_function': log_scale_forward}}
+prior_dict = {'dist_inh': {'bounds': (-5, 1), 'rescale_function': log_scale_forward},
+              'prox_inh': {'bounds': (-5, 1), 'rescale_function': log_scale_forward}, 
+              'dist_exc': {'bounds': (-5, 1), 'rescale_function': log_scale_forward},
+              'prox_exc': {'bounds': (-5, 1), 'rescale_function': log_scale_forward}}
 
 # Create uniform prior and sample
 prior = UniformPrior(parameters=list(prior_dict.keys()))

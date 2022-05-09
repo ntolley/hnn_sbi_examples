@@ -5,7 +5,7 @@ import dill
 import torch
 from functools import partial
 from utils import (linear_scale_forward, log_scale_forward, UniformPrior,
-                   simulator_hnn, hnn_rc_param_function, load_prerun_simulations,
+                   simulator_hnn, hnn_erp_param_function, load_prerun_simulations,
                    get_dataset_psd, get_dataset_peaks, load_posterior)
 from sklearn.decomposition import PCA
 from dask_jobqueue import SLURMCluster
@@ -32,22 +32,21 @@ client.cluster.scale(num_cores)
 net = jones_2009_model()
 net.clear_connectivity()
 
-data_path = '../../data/hnn_rc'
-save_path = '../../data/hnn_rc/validation_sims'
-temp_path = '../../data/hnn_rc/temp'
+data_path = '../../data/hnn_erp'
+save_path = '../../data/hnn_erp/validation_sims'
+temp_path = '../../data/hnn_erp/temp'
 
-with open(f'{data_path}/posteriors/hnn_rc_posterior_dicts.pkl', 'rb') as output_file:
+with open(f'{data_path}/posteriors/hnn_erp_posterior_dicts.pkl', 'rb') as output_file:
     posterior_state_dicts = dill.load(output_file)
 with open(f'{data_path}/sbi_sims/prior_dict.pkl', 'rb') as output_file:
     prior_dict = dill.load(output_file)
 with open(f'{data_path}/sbi_sims/sim_metadata.pkl', 'rb') as output_file:
     sim_metadata = dill.load(output_file)
-with open(f'{data_path}/posteriors/hnn_rc_posterior_metadata.pkl', 'rb') as output_file:
+with open(f'{data_path}/posteriors/hnn_erp_posterior_metadata.pkl', 'rb') as output_file:
     posterior_metadata = dill.load(output_file)
     
 dt = sim_metadata['dt'] # Sampling interval used for simulation
 tstop = sim_metadata['tstop'] # Sampling interval used for simulation
-zero_samples = posterior_metadata['zero_samples']
 
 t_vec = np.linspace(0, tstop, np.round(tstop/dt).astype(int))
 
@@ -60,8 +59,8 @@ limits = list(prior_dict.values())
 x_orig, theta_orig = np.load(f'{data_path}/sbi_sims/x_sbi.npy'), np.load(f'{data_path}/sbi_sims/theta_sbi.npy')
 x_cond, theta_cond = np.load(f'{data_path}/sbi_sims/x_grid.npy'), np.load(f'{data_path}/sbi_sims/theta_grid.npy')
 
-x_orig[:, :zero_samples] = np.zeros(x_orig[:, :zero_samples].shape)
-x_cond[:, :zero_samples] = np.zeros(x_cond[:, :zero_samples].shape)
+x_orig = x_orig[:,0,:]
+x_cond = x_cond[:,0,:]
 
 load_info = {name: {'x_train': posterior_dict['input_dict']['feature_func'](x_orig), 
                     'x_cond': posterior_dict['input_dict']['feature_func'](x_cond)}
@@ -70,7 +69,7 @@ load_info = {name: {'x_train': posterior_dict['input_dict']['feature_func'](x_or
 # Create batch simulation function
 def batch(seq, theta_samples, save_path):
     # create simulator object, rescale function transforms (0,1) to range specified in prior_dict
-    simulator = partial(simulator_hnn, prior_dict=prior_dict, param_function=hnn_rc_param_function,
+    simulator = partial(simulator_hnn, prior_dict=prior_dict, param_function=hnn_erp_param_function,
                         network_model=net)
 
     # Create lazy list of tasks
@@ -91,8 +90,6 @@ def batch(seq, theta_samples, save_path):
     
 
 for input_type, posterior_dict in posterior_state_dicts.items():
-    if input_type in ['pca5', 'pca10']:
-        continue
     state_dict = posterior_dict['posterior']
     n_params = posterior_dict['n_params']
     n_sims = posterior_dict['n_sims']
@@ -143,4 +140,4 @@ for input_type, posterior_dict in posterior_state_dicts.items():
     for f in files:
         os.remove(f)
 
-os.system('scancel -u ntolley')
+#os.system('scancel -u ntolley')
