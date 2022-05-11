@@ -24,7 +24,7 @@ n_sims = 100_000
 posterior_dict = dict()
 posterior_dict_training_data = dict()
 
-data_path = '../../data/hnn_erp'
+data_path = '../../data/hnn_beta'
 
 prior_dict = pickle.load(open(f'{data_path}/sbi_sims/prior_dict.pkl', 'rb'))
 sim_metadata = pickle.load(open(f'{data_path}/sbi_sims/sim_metadata.pkl', 'rb'))
@@ -39,6 +39,8 @@ x_orig, theta_orig = x_orig[:n_sims, :], theta_orig[:n_sims, :]
 
 #Number of samples to set to zero
 x_orig = x_orig[:,0,:]
+zero_samples = 100
+x_orig[:, :zero_samples] = np.repeat(x_orig[:, zero_samples], zero_samples).reshape(x_orig.shape[0], zero_samples)
 
 # Add noise for regularization
 noise_amp = 1e-5
@@ -56,23 +58,23 @@ def psd_peak_func(x_raw, fs):
 pca30 = PCA(n_components=30, random_state=rng_seed)
 pca30.fit(x_orig_noise)
 
-posterior_metadata = {'rng_seed': rng_seed, 'noise_amp': noise_amp, 'n_sims': n_sims, 'fs': fs}
-posterior_metadata_save_label = f'{data_path}/posteriors/hnn_erp_posterior_metadata.pkl'
+posterior_metadata = {'rng_seed': rng_seed, 'noise_amp': noise_amp, 'n_sims': n_sims, 'fs': fs, 'zero_samples': zero_samples}
+posterior_metadata_save_label = f'{data_path}/posteriors/hnn_beta_posterior_metadata.pkl'
 with open(posterior_metadata_save_label, 'wb') as output_file:
         dill.dump(posterior_metadata, output_file)
 
 input_type_list = {'pca30': {
                        'embedding_func': torch.nn.Identity,
-                       'embedding_dict': dict(), 'feature_func': pca30.transform},
-                   'peak': {
-                       'embedding_func': torch.nn.Identity,
-                       'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},
-                   'psd': {
-                       'embedding_func': torch.nn.Identity,
-                       'embedding_dict': dict(), 'feature_func': partial(get_dataset_psd, fs=fs, return_freq=False)},
-                   'psd_peak': {
-                       'embedding_func': torch.nn.Identity,
-                       'embedding_dict': dict(), 'feature_func': partial(psd_peak_func, fs=fs)}}
+                       'embedding_dict': dict(), 'feature_func': pca30.transform}}
+                   #'peak': {
+                   #    'embedding_func': torch.nn.Identity,
+                   #    'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},
+                   #'psd': {
+                   #    'embedding_func': torch.nn.Identity,
+                   #    'embedding_dict': dict(), 'feature_func': partial(get_dataset_psd, fs=fs, return_freq=False)},
+                   #'psd_peak': {
+                   #    'embedding_func': torch.nn.Identity,
+                   #    'embedding_dict': dict(), 'feature_func': partial(psd_peak_func, fs=fs)}}
 
 # Train a posterior for each input type and save state_dict
 for input_type, input_dict in input_type_list.items():
@@ -95,8 +97,8 @@ for input_type, input_dict in input_type_list.items():
                                 'input_dict': input_dict}
 
     # Save intermediate progress
-    posterior_save_label = f'{data_path}/posteriors/hnn_erp_posterior_dicts.pkl'
+    posterior_save_label = f'{data_path}/posteriors/hnn_beta_posterior_dicts.pkl'
     with open(posterior_save_label, 'wb') as output_file:
         dill.dump(posterior_dict, output_file)
         
-#os.system('scancel -u ntolley')
+os.system('scancel -u ntolley')
