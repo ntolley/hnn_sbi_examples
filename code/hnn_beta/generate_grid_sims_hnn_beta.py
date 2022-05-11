@@ -4,13 +4,14 @@ import numpy as np
 import dill
 import torch
 from functools import partial
-from utils import (linear_scale_forward, log_scale_forward, UniformPrior,
+from utils import (log_scale_forward, UniformPrior,
                    simulator_hnn, hnn_beta_param_function, load_prerun_simulations)
 from dask_jobqueue import SLURMCluster
 import dask
 from hnn_core import jones_2009_model
 from distributed import Client
 import glob
+from itertools import product
 
 device = 'cpu'
 
@@ -27,30 +28,25 @@ step_size = num_cores
 client.cluster.scale(num_cores)
 
 net = jones_2009_model()
+net.clear_connectivity()
 
-# Number of simulations to run when sampling from prior
-num_sims = 110_000
-   
 save_path = '../../data/hnn_beta/sbi_sims'
 temp_path = '../../data/hnn_beta/temp'
     
-prior_dict = {'dist_var': {'bounds': (0, 10), 'rescale_function': linear_scale_forward},
-              'prox_var': {'bounds': (0, 40), 'rescale_function': linear_scale_forward},
-              'dist_exc': {'bounds': (-6, -5), 'rescale_function': log_scale_forward},
-              'prox_exc': {'bounds': (-6, -5), 'rescale_function': log_scale_forward},}
-
-# Create uniform prior and sample
-prior = UniformPrior(parameters=list(prior_dict.keys()))
-theta_samples = prior.sample((num_sims,))
-
-with open(f'{save_path}/prior_dict.pkl', 'wb') as f:
-    dill.dump(prior_dict, f)
-
-sim_metadata = {'tstop': 500, 'dt': 0.5}
-with open(f'{save_path}/sim_metadata.pkl', 'wb') as f:
-    dill.dump(sim_metadata, f)
+with open(f'{save_path}/prior_dict.pkl', 'rb') as output_file:
+    prior_dict = dill.load(output_file)
+with open(f'{save_path}/sim_metadata.pkl', 'rb') as output_file:
+    sim_metadata = dill.load(output_file)
     
+n_params = len(prior_dict)
     
+# Evenly spaced grid on (0,1) for theta samples (mapped to bounds defined in prior_dict during simulation)
+n_points = 10
+sample_points = [np.linspace(1e-10,1, n_points).tolist() for _ in range(n_params)]
+theta_samples = list(product(sample_points[0], sample_points[1], sample_points[2], sample_points[3]))
+theta_samples = torch.tensor(theta_samples)
+num_sims = theta_samples.shape[0]
+
 # Create batch simulation function
 def batch(seq, theta_samples, save_path):
     # create simulator object, rescale function transforms (0,1) to range specified in prior_dict
@@ -67,8 +63,8 @@ def batch(seq, theta_samples, save_path):
     final_res = dask.compute(*res_list)
     x_list = np.stack([final_res[idx][0] for idx in range(len(seq))])
 
-    x_name = f'{temp_path}/x_sbi{seq[0]}-{seq[-1]}.npy'
-    theta_name = f'{temp_path}/theta_sbi{seq[0]}-{seq[-1]}.npy'
+    x_name = f'{temp_path}/x_grid{seq[0]}-{seq[-1]}.npy'
+    theta_name = f'{temp_path}/theta_grid{seq[0]}-{seq[-1]}.npy'
 
     np.save(x_name, x_list)
     np.save(theta_name, theta_samples.detach().cpu().numpy())
@@ -87,12 +83,12 @@ for i in range(0, num_sims, step_size):
     seq_list.append(seq)
 
 # Load simulations into single array, save output, and remove small small files
-x_files = [f'{temp_path}/x_sbi{seq[0]}-{seq[-1]}.npy' for seq in seq_list]
-theta_files = [f'{temp_path}/theta_sbi{seq[0]}-{seq[-1]}.npy' for seq in seq_list]
+x_files = [f'{temp_path}/x_grid{seq[0]}-{seq[-1]}.npy' for seq in seq_list]
+theta_files = [f'{temp_path}/theta_grid{seq[0]}-{seq[-1]}.npy' for seq in seq_list]
 
 x_orig, theta_orig = load_prerun_simulations(x_files, theta_files)
-x_name = f'{save_path}/x_sbi.npy'
-theta_name = f'{save_path}/theta_sbi.npy'
+x_name = f'{save_path}/x_grid.npy'
+theta_name = f'{save_path}/theta_grid.npy'
 np.save(x_name, x_orig)
 np.save(theta_name, theta_orig)
 
@@ -101,4 +97,5 @@ for f in files:
     os.remove(f)
 
 
-os.system('scancel -u ntolley')
+#os.system('scancel -u ntolley')
+

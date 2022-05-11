@@ -133,7 +133,7 @@ class HNNSimulator:
         self.param_function(net, theta_dict)
 
         # simulate dipole over one trial
-        dpl = simulate_dipole(net, tstop=self.tstop, dt=self.dt, n_trials=1, postproc=True)
+        dpl = simulate_dipole(net, tstop=self.tstop, dt=self.dt, n_trials=1, postproc=False)
 
         # get the signal output, downsample
         x_l2 = torch.tensor(dpl[0].copy().smooth(20).data['L2'], dtype=torch.float32)
@@ -195,7 +195,7 @@ def simulator_hnn(theta, prior_dict, param_function, network_model=jones_2009_mo
         x = torch.stack(x)
         return torch.tensor(x, dtype=torch.float32)
     
-def hnn_beta_param_function(net, theta_dict):
+def hnn_beta_param_function(net, theta_dict, rng=rng):
     beta_start = 200.0
     prox_seed = rng.integers(1000)
     dist_seed = rng.integers(1000)
