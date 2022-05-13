@@ -12,14 +12,16 @@ from distributed import Client
 from sbi import utils as sbi_utils
 from sbi import analysis as sbi_analysis
 from sbi import inference as sbi_inference
+from sklearn.decomposition import PCA
 
 from hnn_core import jones_2009_model, simulate_dipole
+rng_seed = 123
+rng = np.random.default_rng(123)
 
 device = 'cpu'
+num_cores = 256
 
-def run_hnn_sim(net, param_function, prior_dict, tstop, save_path):
-    num_sims = 110_0
-
+def run_hnn_sim(net, param_function, prior_dict, theta_samples, tstop, save_path, save_suffix):
     # Set up cluster and reserve resources
     cluster = SLURMCluster(
         cores=32, processes=32, queue='compute', memory="256GB", walltime="3:00:00",
@@ -29,14 +31,9 @@ def run_hnn_sim(net, param_function, prior_dict, tstop, save_path):
     client.upload_file('../utils.py')
     print(client.dashboard_link)
     
-    num_cores = 256
     step_size = num_cores
     client.cluster.scale(num_cores)
     
-    # Create uniform prior and sample
-    prior = UniformPrior(parameters=list(prior_dict.keys()))
-    theta_samples = prior.sample((num_sims,))
-
     with open(f'{save_path}/sbi_sims/prior_dict.pkl', 'wb') as f:
         dill.dump(prior_dict, f)
 
@@ -49,33 +46,107 @@ def run_hnn_sim(net, param_function, prior_dict, tstop, save_path):
                         network_model=net, tstop=tstop)
     # Generate simulations
     seq_list = list()
+    num_sims = theta_samples.shape[0]
+    
     for i in range(0, num_sims, step_size):
-        print(i)
         seq = list(range(i, i + step_size))
         if i + step_size < theta_samples.shape[0]:
             batch(simulator, seq, theta_samples[i:i + step_size, :], save_path)
         else:
-            print(i, theta_samples.shape[0])
             seq = list(range(i, theta_samples.shape[0]))
             batch(simulator, seq, theta_samples[i:, :], save_path)
         seq_list.append(seq)
         
     # Load simulations into single array, save output, and remove small small files
-    x_files = [f'{save_path}/temp/x_sbi{seq[0]}-{seq[-1]}.npy' for seq in seq_list]
-    theta_files = [f'{save_path}/temp/theta_sbi{seq[0]}-{seq[-1]}.npy' for seq in seq_list]
+    x_files = [f'{save_path}/temp/x_temp{seq[0]}-{seq[-1]}.npy' for seq in seq_list]
+    theta_files = [f'{save_path}/temp/theta_temp{seq[0]}-{seq[-1]}.npy' for seq in seq_list]
 
     x_orig, theta_orig = load_prerun_simulations(x_files, theta_files)
-    x_name = f'{save_path}/sbi_sims/x_sbi.npy'
-    theta_name = f'{save_path}/sbi_sims/theta_sbi.npy'
+    x_name = f'{save_path}/sbi_sims/x_{save_suffix}.npy'
+    theta_name = f'{save_path}/sbi_sims/theta_{save_suffix}.npy'
     np.save(x_name, x_orig)
     np.save(theta_name, theta_orig)
 
     files = glob.glob(str(save_path) + '/temp/*')
     for f in files:
         os.remove(f)
+        
+def train_posterior(data_path, ntrain_sims, noise_amp, zero_samples=0):
+    posterior_dict = dict()
+    posterior_dict_training_data = dict()
+
+
+    prior_dict = dill.load(open(f'{data_path}/sbi_sims/prior_dict.pkl', 'rb'))
+    sim_metadata = dill.load(open(f'{data_path}/sbi_sims/sim_metadata.pkl', 'rb'))
+
+    prior = UniformPrior(parameters=list(prior_dict.keys()))
+    n_params = len(prior_dict)
+    limits = list(prior_dict.values())
+
+    # x_orig stores full waveform to be used for embedding
+    x_orig, theta_orig = np.load(f'{data_path}/sbi_sims/x_sbi.npy'), np.load(f'{data_path}/sbi_sims/theta_sbi.npy')
+    x_orig, theta_orig = x_orig[:ntrain_sims, :], theta_orig[:ntrain_sims, :]
+
+    #Number of samples to set to zero
+    x_orig[:, :zero_samples] = np.repeat(x_orig[:, zero_samples], zero_samples).reshape(x_orig.shape[0], zero_samples)
+
+    # Add noise for regularization
+    noise_amp = 0.01
+    noise = np.random.random(x_orig.shape) * noise_amp - (noise_amp / 2)
+    x_orig_noise = x_orig + noise
+
+    dt = sim_metadata['dt'] # Sampling interval used for simulation
+    fs = (1/dt) * 1e3
+
+    pca30 = PCA(n_components=30, random_state=rng_seed)
+    pca30.fit(x_orig_noise)
+
+    posterior_metadata = {'rng_seed': rng_seed, 'noise_amp': noise_amp, 'ntrain_sims': ntrain_sims, 'fs': fs, 'zero_samples': zero_samples}
+    posterior_metadata_save_label = f'{data_path}/posteriors/hnn_rc_posterior_metadata.pkl'
+    with open(posterior_metadata_save_label, 'wb') as output_file:
+            dill.dump(posterior_metadata, output_file)
+
+    input_type_list = {'pca30': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': pca30.transform},
+                       'peak': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},
+                       'psd': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': partial(get_dataset_psd, fs=fs, return_freq=False)},
+                       'psd_peak': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': partial(psd_peak_func, fs=fs, tstop=sim_metadata['tstop'])}}
+
+    # Train a posterior for each input type and save state_dict
+    for input_type, input_dict in input_type_list.items():
+        print(input_type)
+
+        neural_posterior = sbi_utils.posterior_nn(model='maf', embedding_net=input_dict['embedding_func'](**input_dict['embedding_dict']))
+        inference = sbi_inference.SNPE(prior=prior, density_estimator=neural_posterior, show_progress_bars=True, device=device)
+        x_train = torch.tensor(input_dict['feature_func'](x_orig_noise)).float()
+        theta_train = torch.tensor(theta_orig).float()
+        if x_train.dim() == 1:
+            x_train= x_train.reshape(-1, 1)
+
+        inference.append_simulations(theta_train, x_train, proposal=prior)
+
+        nn_posterior = inference.train(num_atoms=10, training_batch_size=5000, use_combined_loss=True, discard_prior_samples=True, max_num_epochs=None, show_train_summary=True)
+
+        posterior_dict[input_type] = {'posterior': nn_posterior.state_dict(),
+                                    'n_params': n_params,
+                                    'n_sims': n_sims,
+                                    'input_dict': input_dict}
+
+        # Save intermediate progress
+        posterior_save_label = f'{data_path}/posteriors/hnn_rc_posterior_dicts.pkl'
+        with open(posterior_save_label, 'wb') as output_file:
+            dill.dump(posterior_dict, output_file)
 
 # Create batch simulation function
 def batch(simulator, seq, theta_samples, save_path):
+    print(f'Sim Idx: {(seq[0], seq[-1])}')
     # Create lazy list of tasks
     res_list= []
     for sim_idx in range(len(seq)):
@@ -86,8 +157,8 @@ def batch(simulator, seq, theta_samples, save_path):
     final_res = dask.compute(*res_list)
     x_list = np.stack([final_res[idx][0] for idx in range(len(seq))])
 
-    x_name = f'{save_path}/temp/x_sbi{seq[0]}-{seq[-1]}.npy'
-    theta_name = f'{save_path}/temp/theta_sbi{seq[0]}-{seq[-1]}.npy'
+    x_name = f'{save_path}/temp/x_temp{seq[0]}-{seq[-1]}.npy'
+    theta_name = f'{save_path}/temp/theta_temp{seq[0]}-{seq[-1]}.npy'
 
     np.save(x_name, x_list)
     np.save(theta_name, theta_samples.detach().cpu().numpy())
@@ -179,6 +250,11 @@ def get_dataset_peaks(x_raw, tstop=500):
          np.min(x_raw,axis=1), ts[np.argmin(x_raw, axis=1)]]).T
 
     return peak_features
+
+def psd_peak_func(x_raw, fs, tstop):
+    x_psd = get_dataset_psd(x_raw, fs=fs, return_freq=False)
+    x_peak = get_dataset_peaks(x_raw, tstop=sim_metadata['tstop'])
+    return np.hstack([x_psd, x_peak])
 
 def load_posterior(state_dict, x_infer, theta_infer, prior, embedding_net):    
     neural_posterior = sbi_utils.posterior_nn(model='maf', embedding_net=embedding_net)
