@@ -8,7 +8,7 @@ from utils import (linear_scale_forward, UniformPrior, run_rc_sim)
 # Number of simulations to run when sampling from prior
 num_sims = 110_000
    
-save_path = '../data/rc_circuit/sbi_sims'
+save_path = '../data/rc_circuit'
     
 prior_dict = {'amp1': {'bounds': (0, 1), 'scale_func': linear_scale_forward},
               'amp2': {'bounds': (-1, 0), 'scale_func': linear_scale_forward}, 
@@ -22,7 +22,7 @@ with open(f'{save_path}/prior_dict.pkl', 'wb') as f:
     dill.dump(prior_dict, f)
 
 sim_metadata = {'tstop': 80, 'dt': 0.5}
-with open(f'{save_path}/sim_metadata.pkl', 'wb') as f:
+with open(f'{save_path}sbi_sims//sim_metadata.pkl', 'wb') as f:
     dill.dump(sim_metadata, f)
 
 v_list = list()
@@ -40,8 +40,8 @@ for sim_idx in range(num_sims):
 x_sims = np.hstack(v_list).T
 theta_sims = theta_samples.numpy()
 
-x_name = f'{save_path}/x_sbi.npy'
-theta_name = f'{save_path}/theta_sbi.npy'
+x_name = f'{save_path}/sbi_sims/x_sbi.npy'
+theta_name = f'{save_path}/sbi_sims/theta_sbi.npy'
 np.save(x_name, x_sims)
 np.save(theta_name, theta_sims)
 
