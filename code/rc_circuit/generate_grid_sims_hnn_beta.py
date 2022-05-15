@@ -4,7 +4,7 @@ import os
 import numpy as np
 import dill
 import torch
-from utils import (run_hnn_sim, hnn_erp_param_function, start_cluster)
+from utils import (run_hnn_sim, hnn_beta_param_function, start_cluster)
 from hnn_core import jones_2009_model
 from itertools import product
 
@@ -12,7 +12,7 @@ device = 'cpu'
 
 net = jones_2009_model()
 
-save_path = '../../data/hnn_erp'
+save_path = '../../data/hnn_beta'
 save_suffix = 'grid'
     
 with open(f'{save_path}/sbi_sims/prior_dict.pkl', 'rb') as output_file:
@@ -32,7 +32,7 @@ theta_samples = torch.tensor(theta_samples)
 
 start_cluster() # reserve resources for HNN simulations
 
-run_hnn_sim(net=net, param_function=hnn_erp_param_function, prior_dict=prior_dict,
+run_hnn_sim(net=net, param_function=hnn_beta_param_function, prior_dict=prior_dict,
             theta_samples=theta_samples, tstop=tstop, save_path=save_path, save_suffix=save_suffix)
 
 #os.system('scancel -u ntolley')
