@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="297mm"
+   height="210mm"
+   viewBox="0 0 297 210"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="circuit_compare.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.0606602"
+     inkscape:cx="293.63805"
+     inkscape:cy="457.86556"
+     inkscape:document-units="mm"
+     inkscape:current-layer="g2202"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1006"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-87)"
+     style="display:inline">
+    <path
+       sodipodi:type="star"
+       style="fill:#ffcc00;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path4715-6"
+       sodipodi:sides="3"
+       sodipodi:cx="117.33132"
+       sodipodi:cy="179.93594"
+       sodipodi:r1="6.0298748"
+       sodipodi:r2="3.0149374"
+       sodipodi:arg1="1.3473197"
+       sodipodi:arg2="2.3945173"
+       inkscape:flatsided="true"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m 118.66767,185.81587 -7.09669,-7.66258 10.18434,-2.31462 z"
+       inkscape:transform-center-x="-0.67925965"
+       inkscape:transform-center-y="-5.8627777"
+       transform="matrix(-0.37896064,-0.48357513,-0.39744012,0.48867733,191.51301,135.54698)" />
+    <rect
+       style="fill:#ffcc00;fill-opacity:1;stroke:none;stroke-width:0.33424142;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4747"
+       width="29.183298"
+       height="1.9623092"
+       x="-197.75681"
+       y="73.397491"
+       transform="matrix(-0.00812189,-0.99996702,0.99998779,-0.00494192,0,0)" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4749-7"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.26458333,0,0,0.26458333,112.78392,88.13724)"><flowRegion
+         id="flowRegion4751-0"><rect
+           id="rect4753-9"
+           width="113.57143"
+           height="50.714287"
+           x="304.28571"
+           y="324.4151" /></flowRegion><flowPara
+         id="flowPara4755-3">simne</flowPara></flowRoot>    <rect
+       style="display:inline;fill:#000000;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4747-2-8-9"
+       width="0.54796189"
+       height="0"
+       x="243.84824"
+       y="177.48601" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="214.3125"
+       y="213.39166"
+       id="text5526"><tspan
+         sodipodi:role="line"
+         id="tspan5524"
+         x="214.3125"
+         y="222.75543"
+         style="stroke-width:0.26458332" /></text>
+    <rect
+       style="display:inline;fill:#ccaaff;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4747-2-8-7-29-4-6-7"
+       width="0.55554485"
+       height="2.2127106"
+       x="290.25253"
+       y="189.09677" />
+    <path
+       style="fill:none;stroke:#71c837;stroke-width:1.32926297;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 76.731222,150.1919 c 21.716467,-4.77232 10.092483,11.85144 10.092483,11.85144"
+       id="path4471-5-2-7-5"
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0" />
+    <ellipse
+       style="display:inline;fill:#71c837;fill-opacity:1;stroke:#000000;stroke-width:0.62032253;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path5201-1-7-9-6"
+       cx="86.600845"
+       cy="162.31094"
+       rx="2.0142446"
+       ry="2.0142441" />
+    <path
+       inkscape:transform-center-y="-7.3659788"
+       inkscape:transform-center-x="2.666224"
+       style="fill:none;stroke:#000000;stroke-width:1.73334718;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 72.007699,150.48468 c 0,0 5.804707,-3.54785 6.335044,4.21513"
+       id="path5438-3-0"
+       inkscape:connector-curvature="0" />
+    <path
+       transform="matrix(0.37748834,0.39197065,0.39892436,-0.39418725,-54.603483,219.24322)"
+       inkscape:transform-center-y="4.7428314"
+       inkscape:transform-center-x="0.68787893"
+       d="m 118.66767,185.81587 -7.09669,-7.66258 10.18434,-2.31462 z"
+       inkscape:randomized="0"
+       inkscape:rounded="0"
+       inkscape:flatsided="true"
+       sodipodi:arg2="2.3945173"
+       sodipodi:arg1="1.3473197"
+       sodipodi:r2="3.0149374"
+       sodipodi:r1="6.0298748"
+       sodipodi:cy="179.93594"
+       sodipodi:cx="117.33132"
+       sodipodi:sides="3"
+       id="path4715-6-3"
+       style="display:inline;fill:#ffcc00;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       sodipodi:type="star" />
+    <rect
+       transform="matrix(0.00407406,0.9999917,-0.99999645,0.00266407,0,0)"
+       y="-61.454754"
+       x="163.03346"
+       height="1.9623208"
+       width="30.253315"
+       id="rect4747-6"
+       style="display:inline;fill:#ffcc00;fill-opacity:1;stroke:none;stroke-width:0.34031484;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <rect
+       style="display:inline;fill:#000000;stroke:#000000;stroke-width:0.30648071;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4757-5-31-7"
+       width="1.2980318"
+       height="18.857029"
+       x="-208.96577"
+       y="68.213364"
+       transform="matrix(0.00183281,-0.99999832,0.99997932,0.00643112,0,0)" />
+    <rect
+       style="display:inline;fill:#000000;stroke:#000000;stroke-width:0.65792108;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4757-74-3"
+       width="2.111866"
+       height="53.411091"
+       x="67.116692"
+       y="154.35518" />
+    <rect
+       style="display:inline;fill:#000000;stroke:#000000;stroke-width:0.30697477;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4757-5-5-9-5"
+       width="1.6538396"
+       height="14.826161"
+       x="-195.50375"
+       y="-135.02411"
+       transform="matrix(-0.76353897,-0.64576176,0.68401743,-0.72946567,0,0)" />
+    <rect
+       style="display:inline;fill:#000000;stroke:#000000;stroke-width:0.30830339;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4757-5-5-6-0-6"
+       width="1.6604099"
+       height="14.917503"
+       x="-103.2271"
+       y="194.67877"
+       transform="matrix(0.6652822,-0.74659199,0.7110685,0.70312274,0,0)" />
+    <path
+       d="m 118.66767,185.81587 -7.09669,-7.66258 10.18434,-2.31462 z"
+       sodipodi:type="star"
+       style="display:inline;fill:#0066ff;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path4715-1-2"
+       sodipodi:sides="3"
+       sodipodi:cx="117.33132"
+       sodipodi:cy="179.93594"
+       sodipodi:r1="6.0298748"
+       sodipodi:r2="3.0149374"
+       sodipodi:arg1="1.3473197"
+       sodipodi:arg2="2.3945173"
+       inkscape:flatsided="true"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       inkscape:transform-center-x="1.0159421"
+       inkscape:transform-center-y="-6.5311787"
+       transform="matrix(0.89336672,-0.98435271,0.98435271,0.89336672,-213.60662,168.75692)" />
+    <path
+       sodipodi:nodetypes="cc"
+       style="display:inline;fill:none;stroke:#d35f5f;stroke-width:1.32926297;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 76.379375,238.3554 c 0,0 -10.867127,7.23883 -15.70386,-9.04536"
+       id="path4471-50-0"
+       inkscape:connector-curvature="0" />
+    <ellipse
+       style="display:inline;fill:#d35f5f;fill-opacity:1;stroke:#000000;stroke-width:0.62845588;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path5201-1-7-7-3"
+       cx="76.988487"
+       cy="238.2812"
+       rx="2.0142446"
+       ry="2.0142441" />
+    <path
+       style="display:inline;fill:none;stroke:#000000;stroke-width:1.73334718;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 63.07018,226.58239 c 0,0 -1.216431,6.69349 -7.362578,1.92168"
+       id="path5438-8-9-9-1"
+       inkscape:transform-center-x="0.81368142"
+       inkscape:transform-center-y="0.57721402"
+       inkscape:connector-curvature="0" />
+    <g
+       transform="matrix(-0.00258491,-0.28221038,0.28221038,-0.00258491,40.029823,208.5006)"
+       id="g4206-7-9-7-3-7-5-6"
+       inkscape:export-xdpi="238.58"
+       inkscape:export-ydpi="238.58"
+       inkscape:export-filename="C:\Users\spenc\Desktop\Google Drive\Papers\IEEEpaperExample\buckConverter.png" />
+    <g
+       id="g2202"
+       transform="matrix(3.084003,0,0,3.084003,-445.21789,-316.67617)">
+      <rect
+         inkscape:export-ydpi="238.58"
+         inkscape:export-xdpi="238.58"
+         inkscape:export-filename="C:\Users\spenc\Desktop\Google Drive\Papers\IEEEpaperExample\buckConverter.png"
+         transform="scale(1,-1)"
+         y="-176.19142"
+         x="181.61903"
+         height="22.207264"
+         width="12.418282"
+         id="rect5158-7-7-0-7"
+         style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.28200001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <g
+         inkscape:export-filename="C:\Users\spenc\Desktop\Google Drive\Papers\IEEEpaperExample\buckConverter.png"
+         inkscape:export-ydpi="238.58"
+         inkscape:export-xdpi="238.58"
+         style="stroke-width:1.31984472;stroke-miterlimit:4;stroke-dasharray:none"
+         transform="matrix(0.19558887,0,0,0.23377206,135.01286,41.773576)"
+         id="g4214-3-5-7-3-9">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.31984472;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="rect4209-6-3-0-2-5"
+           width="24.432468"
+           height="6.9324698"
+           x="225.99806"
+           y="522.646" />
+        <path
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.31984472;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 226.07143,529.68363 h 24.28571"
+           id="path4192-4-69-2-6-3-1"
+           inkscape:connector-curvature="0" />
+        <path
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.31984472;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 226.07143,522.3622 h 24.28571"
+           id="path4192-7-6-3-4-5"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         inkscape:export-ydpi="238.58"
+         inkscape:export-xdpi="238.58"
+         inkscape:export-filename="C:\Users\spenc\Desktop\Google Drive\Papers\IEEEpaperExample\buckConverter.png"
+         transform="matrix(0,-0.21801527,-0.21801527,0,178.97536,198.46282)"
+         id="g4926-1-7-2">
+        <rect
+           style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="rect4909-6-8-5"
+           width="28.873455"
+           height="18.592455"
+           x="141.71956"
+           y="-78.751801" />
+        <path
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.29450667px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 171.24173,-68.339829 -4.52456,-8.63445 -3.59634,14.773331 -5.33623,-14.539073 -3.77011,14.413808 -5.16256,-14.17945 -3.94859,14.411352 -3.8349,-6.839195"
+           id="path4926-7-1-7-1-1-25-2"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cccccccc"
+           inkscape:export-xdpi="140.08725"
+           inkscape:export-ydpi="140.08725" />
+      </g>
+      <text
+         inkscape:export-filename="C:\Users\spenc\Desktop\Google Drive\Papers\IEEEpaperExample\buckConverter.png"
+         inkscape:export-ydpi="238.58"
+         inkscape:export-xdpi="238.58"
+         id="text4152-0-3-7-4-5-00-3-2-2-1"
+         y="165.73715"
+         x="175.07626"
+         style="font-style:normal;font-weight:normal;font-size:3.38666677px;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.28222224px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:125%;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, Normal';text-align:start;writing-mode:lr-tb;baseline-shift:baseline;text-anchor:start;stroke-width:0.28222224px"
+           y="165.73715"
+           x="175.07626"
+           id="tspan4154-7-6-2-1-2-0-1-4-1-3"
+           sodipodi:role="line">C<tspan
+   id="tspan4692-6-7-5-57-3-1-5-4"
+   style="font-style:italic;font-size:2.75166702px;baseline-shift:sub;stroke-width:0.28222224px" /></tspan></text>
+      <text
+         inkscape:export-filename="C:\Users\spenc\Desktop\Google Drive\Papers\IEEEpaperExample\buckConverter.png"
+         inkscape:export-ydpi="238.58"
+         inkscape:export-xdpi="238.58"
+         id="text4152-0-3-7-4-5-00-3-2-2-1-7"
+         y="166.09027"
+         x="196.66875"
+         style="font-style:normal;font-weight:normal;font-size:3.38666677px;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.28222224px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:125%;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, Normal';text-align:start;writing-mode:lr-tb;baseline-shift:baseline;text-anchor:start;stroke-width:0.28222224px"
+           y="166.09027"
+           x="196.66875"
+           id="tspan4154-7-6-2-1-2-0-1-4-1-3-9"
+           sodipodi:role="line">R<tspan
+   id="tspan4692-6-7-5-57-3-1-5-4-5"
+   style="font-style:italic;font-size:2.75166726px;baseline-shift:sub;stroke-width:0.28222224px" /></tspan></text>
+      <text
+         inkscape:export-filename="C:\Users\spenc\Desktop\Google Drive\Papers\IEEEpaperExample\buckConverter.png"
+         inkscape:export-ydpi="238.58"
+         inkscape:export-xdpi="238.58"
+         id="text4152-0-3-7-4-5-00-8-1-2"
+         y="159.58722"
+         x="198.21318"
+         style="font-style:normal;font-weight:normal;font-size:3.38666677px;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.28222224px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:125%;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, Normal';text-align:start;writing-mode:lr-tb;baseline-shift:baseline;text-anchor:start;stroke-width:0.28222224px"
+           y="159.58722"
+           x="198.21318"
+           id="tspan4154-7-6-2-1-2-0-5-3-8"
+           sodipodi:role="line">V<tspan
+   id="tspan4692-6-7-5-57-9-0-1"
+   style="font-style:italic;font-size:2.75166702px;baseline-shift:sub;stroke-width:0.28222224px">out</tspan></tspan></text>
+      <g
+         inkscape:export-filename="C:\Users\spenc\Desktop\Google Drive\Papers\IEEEpaperExample\buckConverter.png"
+         inkscape:export-ydpi="238.58"
+         inkscape:export-xdpi="238.58"
+         transform="matrix(0.28222223,0,0,0.28222223,152.04388,-17.323185)"
+         id="g4319-0-5-3-9-9">
+        <path
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 153.53056,621.29224 8.39689,0.0884"
+           id="path4300-7-0-0-0-7"
+           inkscape:connector-curvature="0" />
+        <path
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 157.7732,625.18133 v -7.42462"
+           id="path4302-2-6-6-1-2"
+           inkscape:connector-curvature="0" />
+      </g>
+      <path
+         inkscape:export-filename="C:\Users\spenc\Desktop\Google Drive\Papers\IEEEpaperExample\buckConverter.png"
+         inkscape:export-ydpi="238.58"
+         inkscape:export-xdpi="238.58"
+         inkscape:connector-curvature="0"
+         id="path4300-3-3-8-7-6-2"
+         d="m 195.29199,172.28328 2.36979,0.025"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.28222224px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         inkscape:export-filename="C:\Users\spenc\Desktop\Google Drive\Papers\IEEEpaperExample\buckConverter.png"
+         inkscape:export-ydpi="238.58"
+         inkscape:export-xdpi="238.58"
+         inkscape:connector-curvature="0"
+         id="path4300-3-3-8-7-6-2-5"
+         d="m 188.04508,153.93221 0.025,-2.36979"
+         style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.28222221px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <circle
+         r="0.69364655"
+         cy="151.03786"
+         cx="188.04791"
+         id="path4722-4-0-5-4"
+         style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.19455235;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <g
+         id="g2260"
+         transform="rotate(180,194.00886,168.20936)">
+        <path
+           style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.28222221px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 200.01108,160.13753 0.025,-2.36979"
+           id="path4300-3-3-8-7-6-2-5-3"
+           inkscape:connector-curvature="0"
+           inkscape:export-xdpi="238.58"
+           inkscape:export-ydpi="238.58"
+           inkscape:export-filename="C:\Users\spenc\Desktop\Google Drive\Papers\IEEEpaperExample\buckConverter.png" />
+        <circle
+           style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.19455235;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="path4722-4-0-5-4-5"
+           cx="200.01416"
+           cy="157.24313"
+           r="0.69364655" />
+      </g>
+    </g>
+  </g>
+</svg>
