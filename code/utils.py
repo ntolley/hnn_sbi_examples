@@ -113,6 +113,9 @@ def train_posterior(data_path, ntrain_sims, noise_amp, zero_samples=0):
     dt = sim_metadata['dt'] # Sampling interval used for simulation
     fs = (1/dt) * 1e3
 
+    pca4 = PCA(n_components=30, random_state=rng_seed)
+    pca4.fit(x_orig_noise)
+    
     pca30 = PCA(n_components=30, random_state=rng_seed)
     pca30.fit(x_orig_noise)
 
@@ -121,7 +124,13 @@ def train_posterior(data_path, ntrain_sims, noise_amp, zero_samples=0):
     with open(posterior_metadata_save_label, 'wb') as output_file:
             dill.dump(posterior_metadata, output_file)
 
-    input_type_list = {'pca30': {
+    input_type_list = {'raw_waveform': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': torch.nn.Identity()},
+                       'pca4': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': pca4.transform},
+                       'pca30': {
                            'embedding_func': torch.nn.Identity,
                            'embedding_dict': dict(), 'feature_func': pca30.transform},
                        'peak': {
@@ -155,7 +164,7 @@ def train_posterior(data_path, ntrain_sims, noise_amp, zero_samples=0):
                                     'input_dict': input_dict}
 
         # Save intermediate progress
-        posterior_save_label = f'{data_path}/posteriors/hnn_rc_posterior_dicts.pkl'
+        posterior_save_label = f'{data_path}/posteriors/posterior_dicts.pkl'
         with open(posterior_save_label, 'wb') as output_file:
             dill.dump(posterior_dict, output_file)
             
@@ -163,13 +172,13 @@ def train_posterior(data_path, ntrain_sims, noise_amp, zero_samples=0):
 def validate_posterior(net, nval_sims, param_function, data_path):
         
     # Open relevant files
-    with open(f'{data_path}/posteriors/hnn_rc_posterior_dicts.pkl', 'rb') as output_file:
+    with open(f'{data_path}/posteriors/posterior_dicts.pkl', 'rb') as output_file:
         posterior_state_dicts = dill.load(output_file)
     with open(f'{data_path}/sbi_sims/prior_dict.pkl', 'rb') as output_file:
         prior_dict = dill.load(output_file)
     with open(f'{data_path}/sbi_sims/sim_metadata.pkl', 'rb') as output_file:
         sim_metadata = dill.load(output_file)
-    with open(f'{data_path}/posteriors/hnn_rc_posterior_metadata.pkl', 'rb') as output_file:
+    with open(f'{data_path}/posteriors/posterior_metadata.pkl', 'rb') as output_file:
         posterior_metadata = dill.load(output_file)
 
     dt = sim_metadata['dt'] # Sampling interval used for simulation
@@ -219,7 +228,7 @@ def validate_posterior(net, nval_sims, param_function, data_path):
 def validate_rc_posterior(nval_sims, data_path):
         
     # Open relevant files
-    with open(f'{data_path}/posteriors/hnn_rc_posterior_dicts.pkl', 'rb') as output_file:
+    with open(f'{data_path}/posteriors/posterior_dicts.pkl', 'rb') as output_file:
         posterior_state_dicts = dill.load(output_file)
     with open(f'{data_path}/sbi_sims/prior_dict.pkl', 'rb') as output_file:
         prior_dict = dill.load(output_file)

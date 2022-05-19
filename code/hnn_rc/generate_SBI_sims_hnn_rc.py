@@ -12,7 +12,7 @@ dt = 0.5
 
 net = jones_2009_model()
    
-save_path = '../../data/hnn_rc/'
+save_path = '../../data/hnn_rc'
 save_suffix = 'sbi'
     
 prior_dict = {'prox_weight': {'bounds': (-4, -3), 'rescale_function': log_scale_forward},

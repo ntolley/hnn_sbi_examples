@@ -17,7 +17,7 @@ ntrain_sims = 100_000
 data_path = '../../data/hnn_erp'
 
 #Number of samples to set to zero
-zero_samples = 100
+zero_samples = 0
 noise_amp = 1e-5
 train_posterior(data_path, ntrain_sims, noise_amp, zero_samples)
 
