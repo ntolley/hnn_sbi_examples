@@ -24,13 +24,13 @@ device = 'cpu'
 sim_type = 'hnn_erp'
 data_path = f'../../../data/{sim_type}'
 
-with open(f'{data_path}/posteriors/hnn_rc_posterior_dicts.pkl', 'rb') as output_file:
+with open(f'{data_path}/posteriors/posterior_dicts.pkl', 'rb') as output_file:
     posterior_state_dicts = dill.load(output_file)
 with open(f'{data_path}/sbi_sims/prior_dict.pkl', 'rb') as output_file:
     prior_dict = dill.load(output_file)
 with open(f'{data_path}/sbi_sims/sim_metadata.pkl', 'rb') as output_file:
     sim_metadata = dill.load(output_file)
-with open(f'{data_path}/posteriors/hnn_rc_posterior_metadata.pkl', 'rb') as output_file:
+with open(f'{data_path}/posteriors/posterior_metadata.pkl', 'rb') as output_file:
     posterior_metadata = dill.load(output_file)
     
 dt = sim_metadata['dt'] # Sampling interval used for simulation
