@@ -23,13 +23,13 @@ device = 'cpu'
 sim_type = 'hnn_rc'
 data_path = f'../../../data/{sim_type}'
 
-with open(f'{data_path}/posteriors/hnn_rc_posterior_dicts.pkl', 'rb') as output_file:
+with open(f'{data_path}/posteriors/posterior_dicts.pkl', 'rb') as output_file:
     posterior_state_dicts = dill.load(output_file)
 with open(f'{data_path}/sbi_sims/prior_dict.pkl', 'rb') as output_file:
     prior_dict = dill.load(output_file)
 with open(f'{data_path}/sbi_sims/sim_metadata.pkl', 'rb') as output_file:
     sim_metadata = dill.load(output_file)
-with open(f'{data_path}/posteriors/hnn_rc_posterior_metadata.pkl', 'rb') as output_file:
+with open(f'{data_path}/posteriors/posterior_metadata.pkl', 'rb') as output_file:
     posterior_metadata = dill.load(output_file)
     
 dt = sim_metadata['dt'] # Sampling interval used for simulation
@@ -103,14 +103,14 @@ for input_type, posterior_dict in posterior_state_dicts.items():
     dist_list = list()
     for cond_idx in range(theta_cond.shape[0]):
         start_idx, stop_idx = cond_idx*10, (cond_idx+1)*10
-        dist = np.sqrt(np.mean(np.square(x_val[start_idx:stop_idx,:] - np.tile(x_cond[0,:], 10).reshape(10,-1))))
+        dist = np.sqrt(np.mean(np.square(x_val[start_idx:stop_idx,:] - np.tile(x_cond[cond_idx,:], 10).reshape(10,-1))))
         dist_list.append(dist)
     dist_array = np.array(dist_list)
 
     plt.figure(figsize=(5,5))
     xticks = np.round(np.linspace(all_bounds[2][0], all_bounds[2][1], 10), decimals=2)
     yticks = np.round(np.linspace(all_bounds[0][0], all_bounds[0][1], 10), decimals=2)
-    sns.heatmap(dist_array.reshape(10,10,10)[:,5,:], vmin=0, vmax=0.00012,
+    sns.heatmap(dist_array.reshape(10,10,10)[:,5,:], vmin=0, vmax=0.00008,
                 xticklabels=xticks, yticklabels=yticks, cmap='viridis')
     plt.title(input_type)
     plt.xlabel(param_labels[2])
