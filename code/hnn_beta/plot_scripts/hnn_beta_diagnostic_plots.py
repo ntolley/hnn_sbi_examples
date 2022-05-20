@@ -100,7 +100,7 @@ for input_type, posterior_dict in posterior_state_dicts.items():
     dist_list = list()
     for cond_idx in range(theta_cond.shape[0]):
         start_idx, stop_idx = cond_idx*10, (cond_idx+1)*10
-        dist = np.sqrt(np.mean(np.square(x_val[start_idx:stop_idx,:] - np.tile(x_cond[0,:], 10).reshape(10,-1))))
+        dist = np.sqrt(np.mean(np.square(x_val[start_idx:stop_idx,:] - np.tile(x_cond[cond_idx,:], 10).reshape(10,-1))))
         dist_list.append(dist)
     dist_array = np.array(dist_list)
 

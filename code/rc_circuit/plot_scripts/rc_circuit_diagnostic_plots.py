@@ -101,18 +101,19 @@ for input_type, posterior_dict in posterior_state_dicts.items():
     dist_list = list()
     for cond_idx in range(theta_cond.shape[0]):
         start_idx, stop_idx = cond_idx*10, (cond_idx+1)*10
-        dist = np.sqrt(np.mean(np.square(x_val[start_idx:stop_idx,:] - np.tile(x_cond[0,:], 10).reshape(10,-1))))
+        dist = np.sqrt(np.mean(np.square(x_val[start_idx:stop_idx,:] - np.tile(x_cond[cond_idx,:], 10).reshape(10,-1))))
         dist_list.append(dist)
     dist_array = np.array(dist_list)
 
     plt.figure(figsize=(5,5))
     xticks = np.round(np.linspace(all_bounds[n_params-1][0], all_bounds[n_params-1][1], 10), decimals=2)
     yticks = np.round(np.linspace(all_bounds[0][0], all_bounds[0][1], 10), decimals=2)
-    sns.heatmap(dist_array.reshape(10,10,10)[:,5,:], vmin=0, vmax=2.0,
+    sns.heatmap(dist_array.reshape(10,10,10)[:,5,:], vmin=0, vmax=0.2,
                 xticklabels=xticks, yticklabels=yticks, cmap='viridis')
     plt.title(input_type)
     plt.xlabel(param_labels[2])
     plt.ylabel(param_labels[0])
+    plt.yticks(rotation=0)
     plt.tight_layout()
     plt.savefig(f'../../../figures/{sim_type}/ppc_{sim_type}_{input_type}.svg')
     plt.close()
