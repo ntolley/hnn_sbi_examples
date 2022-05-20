@@ -3,6 +3,7 @@ import dill
 import os
 from scipy.integrate import odeint
 from scipy import signal
+from scipy.stats import wasserstein_distance
 import torch
 import glob
 from functools import partial
@@ -634,3 +635,25 @@ def load_prerun_simulations(x_files, theta_files, downsample=1, save_name=None, 
         np.save(save_name + '_theta_all.npy', theta_all)
     else:
         return x_all, theta_all
+    
+def sample_from_grid(x_grid, posterior, n_samples):
+    return
+    
+def get_parameter_recovery(theta_val, theta_cond, n_samples=10):
+    dist_list = list()
+    for cond_idx in range(theta_cond.shape[0]):
+        start_idx, stop_idx = cond_idx*n_samples, (cond_idx+1)*n_samples
+        dist = [wasserstein_distance(theta_val[start_idx:stop_idx, param_idx], [theta_cond[cond_idx,param_idx]]) for
+                param_idx in range(theta_cond.shape[1])]
+        dist_list.append(dist)
+    dist_array = np.array(dist_list)
+    return dist_array
+
+def get_posterior_predictive_check(x_val, x_cond, n_samples=10):
+    dist_list = list()
+    for cond_idx in range(x_cond.shape[0]):
+        start_idx, stop_idx = cond_idx*n_samples, (cond_idx+1)*n_samples
+        dist = np.sqrt(np.mean(np.square(x_val[start_idx:stop_idx,:] - np.tile(x_cond[cond_idx,:], n_samples).reshape(n_samples,-1))))
+        dist_list.append(dist)
+    dist_array = np.array(dist_list)
+    return dist_array
