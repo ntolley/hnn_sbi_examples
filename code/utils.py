@@ -79,7 +79,7 @@ def run_rc_sim(prior_dict, theta_samples, tstop, save_path, save_suffix):
 def start_cluster():
      # Set up cluster and reserve resources
     cluster = SLURMCluster(
-        cores=32, processes=32, queue='compute', memory="256GB", walltime="12:00:00",
+        cores=32, processes=32, queue='compute', memory="256GB", walltime="20:00:00",
         job_extra=['-A csd403', '--nodes=1'], log_directory=os.getcwd() + '/slurm_out')
 
     client = Client(cluster)
@@ -359,11 +359,11 @@ def dVdt(V, t, pulse_diff, amp1, amp2):
     
     i1 = float(np.logical_and(t > i1_start, t < i1_stop)) * amp1
 
-    # Current for pulse 2
+    # Current for pulse 2 (negative pulse)
     i2_start = i1_start + pulse_diff
     i2_stop = i2_start + pulse_width
     
-    i2 = float(np.logical_and(t > i2_start, t < i2_stop)) * amp2
+    i2 = float(np.logical_and(t > i2_start, t < i2_stop)) * amp2 * -1
     
     I = i1 + i2
         
