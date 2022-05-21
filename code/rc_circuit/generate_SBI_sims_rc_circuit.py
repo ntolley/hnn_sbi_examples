@@ -14,7 +14,7 @@ save_path = '../../data/rc_circuit'
 save_suffix = 'sbi'
 
 prior_dict = {'amp1': {'bounds': (0, 1), 'scale_func': linear_scale_forward},
-              'amp2': {'bounds': (-1, 0), 'scale_func': linear_scale_forward}, 
+              'amp2': {'bounds': (0, 1), 'scale_func': linear_scale_forward}, 
               'latency': {'bounds': (-20, 20), 'scale_func': linear_scale_forward}}
 
 # Create uniform prior and sample
