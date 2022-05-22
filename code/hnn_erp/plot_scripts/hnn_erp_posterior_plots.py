@@ -50,10 +50,14 @@ simulator = partial(simulator_hnn, prior_dict=prior_dict, param_function=hnn_erp
 
 
 # Values on [0,1] mapped to range of bounds defined in prior_dict
-theta_cond_list = [np.array([0.2, 0.2, 0.2, 0.2]), 
-                   np.array([0.2, 0.8, 0.2, 0.8]), 
-                   np.array([0.2, 0.8, 0.2, 0.2]), 
-                   np.array([0.2, 0.2, 0.2, 0.8])]
+theta_cond_list = [np.array([0.05, 0.75, 0.55, 0.05]),
+                    np.array([0.35, 0.05, 0.25, 0.45]),
+                    np.array([0.75, 0.65, 0.05, 0.85]),
+                    np.array([0.65, 0.95, 0.65, 0.05]),
+                    np.array([0.65, 0.95, 0.65, 0.5]),
+                    np.array([0.65, 0.95, 0.65, 0.75])]
+
+
 
 for plot_idx, theta_cond in enumerate(theta_cond_list):
 
