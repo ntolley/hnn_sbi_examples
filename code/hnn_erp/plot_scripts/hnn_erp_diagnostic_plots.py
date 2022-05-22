@@ -55,10 +55,11 @@ load_info = {name: {'x_train': posterior_dict['input_dict']['feature_func'](x_or
              for name, posterior_dict in posterior_state_dicts.items()}
 
 # Parameter recovery plots
-plot_labels = ['Distal inh dist', 'Proximal inh dist', 'Distal exc dist', 'Proximal exc dist']
-param_labels = ['Distal inh (log g)', 'Proximal inh (log g)', 'Distal exc (log g)', 'Proximal exc (log g)']
+plot_labels = ['Distal Inh dist', 'Proximal Inh dist', 'Distal Exc dist', 'Proximal Exc dist']
+param_labels = ['Distal Inh (log g)', 'Proximal Inh (log g)', 'Distal Exc (log g)', 'Proximal Exc (log g)']
 all_bounds = [param_dict['bounds'] for param_dict in prior_dict.values()]
 
+labelsize=16
 for input_type, posterior_dict in posterior_state_dicts.items():
     print(input_type)
     
@@ -72,7 +73,7 @@ for input_type, posterior_dict in posterior_state_dicts.items():
         dist_list.append(dist)
     dist_array = np.array(dist_list)
 
-    plt.figure(figsize=(13,4))
+    plt.figure(figsize=(17,4))
     for plot_idx in range(4):
         plt.subplot(1,4,plot_idx+1)
         xticks = np.round(np.linspace(all_bounds[3][0], all_bounds[3][1], 10), decimals=2)
@@ -80,8 +81,8 @@ for input_type, posterior_dict in posterior_state_dicts.items():
         sns.heatmap(dist_array[:,plot_idx].reshape(10,10,10,10)[:,5,5,:], vmin=0, vmax=0.3,
                     xticklabels=xticks, yticklabels=yticks)
         plt.title(plot_labels[plot_idx])
-        plt.xlabel(param_labels[2])
-        plt.ylabel(param_labels[0])
+        plt.xlabel(param_labels[2], fontsize=labelsize)
+        plt.ylabel(param_labels[0], fontsize=labelsize)
     plt.tight_layout()
     plt.savefig(f'../../../figures/{sim_type}/wasserstein_{sim_type}_{input_type}.svg')
     plt.close()
