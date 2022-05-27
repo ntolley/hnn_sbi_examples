@@ -7,7 +7,7 @@ from utils import (linear_scale_forward, UniformPrior, run_rc_sim)
 
 # Number of simulations to run when sampling from prior
 nsbi_sims = 110_000
-tstop = 80
+tstop = 350
 dt = 0.5
    
 save_path = '../../data/rc_circuit'

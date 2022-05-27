@@ -88,7 +88,7 @@ def start_cluster():
     
     client.cluster.scale(num_cores)
         
-def train_posterior(data_path, ntrain_sims, noise_amp, zero_samples=0):
+def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window_samples):
     posterior_dict = dict()
     posterior_dict_training_data = dict()
 
@@ -102,47 +102,48 @@ def train_posterior(data_path, ntrain_sims, noise_amp, zero_samples=0):
 
     # x_orig stores full waveform to be used for embedding
     x_orig, theta_orig = np.load(f'{data_path}/sbi_sims/x_sbi.npy'), np.load(f'{data_path}/sbi_sims/theta_sbi.npy')
-    x_orig, theta_orig = x_orig[:ntrain_sims, :], theta_orig[:ntrain_sims, :]
+    x_orig, theta_orig = x_orig[:ntrain_sims, window_samples[0]:window_samples[1]], theta_orig[:ntrain_sims, :]
 
-    #Number of samples to set to zero
-    x_orig[:, :zero_samples] = np.repeat(x_orig[:, zero_samples], zero_samples).reshape(x_orig.shape[0], zero_samples)
 
     # Add noise for regularization
-    noise = np.random.random(x_orig.shape) * noise_amp - (noise_amp / 2)
-    x_orig_noise = x_orig + noise
+    x_noise = np.random.random(x_orig.shape) * x_noise_amp - (x_noise_amp / 2)
+    x_orig_noise = x_orig + x_noise
+    
+    theta_noise = np.random.random(theta_orig.shape) * theta_noise_amp - (theta_noise_amp / 2)
 
     dt = sim_metadata['dt'] # Sampling interval used for simulation
     fs = (1/dt) * 1e3
 
-    pca4 = PCA(n_components=30, random_state=rng_seed)
+    pca4 = PCA(n_components=4, random_state=rng_seed)
     pca4.fit(x_orig_noise)
     
     pca30 = PCA(n_components=30, random_state=rng_seed)
     pca30.fit(x_orig_noise)
 
-    posterior_metadata = {'rng_seed': rng_seed, 'noise_amp': noise_amp, 'ntrain_sims': ntrain_sims, 'fs': fs, 'zero_samples': zero_samples}
+    posterior_metadata = {'rng_seed': rng_seed, 'x_noise_amp': x_noise_amp, 'theta_noise_amp': theta_noise_amp,
+                          'ntrain_sims': ntrain_sims, 'fs': fs, 'window_samples': window_samples}
     posterior_metadata_save_label = f'{data_path}/posteriors/posterior_metadata.pkl'
     with open(posterior_metadata_save_label, 'wb') as output_file:
             dill.dump(posterior_metadata, output_file)
 
-    input_type_list = {'raw_waveform': {
-                           'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': torch.nn.Identity()},
+    input_type_list = {#'raw_waveform': {
+                       #    'embedding_func': torch.nn.Identity,
+                       #    'embedding_dict': dict(), 'feature_func': torch.nn.Identity()},
                        'pca4': {
                            'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': pca4.transform},
-                       'pca30': {
-                           'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': pca30.transform},
-                       'peak': {
-                           'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},
-                       'psd': {
-                           'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': partial(get_dataset_psd, fs=fs, return_freq=False)},
-                       'psd_peak': {
-                           'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': partial(psd_peak_func, fs=fs, tstop=sim_metadata['tstop'])}}
+                           'embedding_dict': dict(), 'feature_func': pca4.transform},}
+                       #'pca30': {
+                       #    'embedding_func': torch.nn.Identity,
+                       #    'embedding_dict': dict(), 'feature_func': pca30.transform},
+                       #'peak': {
+                       #    'embedding_func': torch.nn.Identity,
+                       #    'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},
+                       #'psd': {
+                       #    'embedding_func': torch.nn.Identity,
+                       #    'embedding_dict': dict(), 'feature_func': partial(get_dataset_psd, fs=fs, return_freq=False)},
+                       #'psd_peak': {
+                       #    'embedding_func': torch.nn.Identity,
+                       #    'embedding_dict': dict(), 'feature_func': partial(psd_peak_func, fs=fs, tstop=sim_metadata['tstop'])}}
 
     # Train a posterior for each input type and save state_dict
     for input_type, input_dict in input_type_list.items():
@@ -349,12 +350,12 @@ def dVdt(V, t, pulse_diff, amp1, amp2):
     
     E = 0
     R = 1
-    tau = 2
+    tau = 6
     
-    pulse_width = 10
+    pulse_width = 20
     
     # Current for pulse 1
-    i1_start = 30
+    i1_start = 200
     i1_stop = i1_start + pulse_width
     
     i1 = float(np.logical_and(t > i1_start, t < i1_stop)) * amp1
@@ -369,6 +370,23 @@ def dVdt(V, t, pulse_diff, amp1, amp2):
         
     return (E - V + R * I) / tau
 
+def bandpower(x, fs, fmin, fmax):
+    f, Pxx = scipy.signal.periodogram(x, fs=fs)
+    ind_min = np.argmax(f > fmin) - 1
+    ind_max = np.argmax(f > fmax) - 1
+    return np.trapz(Pxx[ind_min: ind_max], f[ind_min: ind_max])
+
+# Bands freq citation: https://www.frontiersin.org/articles/10.3389/fnhum.2020.00089/full
+def get_dataset_bandpower(x, fs):
+    freq_band_list = [(8,13), (13,30), (30,50), (50,80)]
+    
+    x_bandpower_list = list()
+    for idx in range(x.shape[0]):
+        x_bandpower = np.array([bandpower(x[idx,:], fs, freq_band[0], freq_band[1]) for freq_band in freq_band_list])
+        x_bandpower_list.append(x_bandpower)
+        
+    return np.vstack(np.log(x_bandpower_list))
+
 def get_dataset_psd(x_raw, fs, return_freq=True, max_freq=200):
     """Calculate PSD on observed time series (rows of array)"""
     x_psd = list()
@@ -379,6 +397,13 @@ def get_dataset_psd(x_raw, fs, return_freq=True, max_freq=200):
         return np.vstack(np.log(x_psd)), f[(f<max_freq)&(f>0)]
     else:
         return np.vstack(np.log(x_psd))
+    
+# Source: https://stackoverflow.com/questions/44547669/python-numpy-equivalent-of-bandpower-from-matlab
+def bandpower(x, fs, fmin, fmax):
+    f, Pxx = scipy.signal.periodogram(x, fs=fs)
+    ind_min = scipy.argmax(f > fmin) - 1
+    ind_max = scipy.argmax(f > fmax) - 1
+    return scipy.trapz(Pxx[ind_min: ind_max], f[ind_min: ind_max])
 
 
 def get_dataset_peaks(x_raw, tstop=500):
