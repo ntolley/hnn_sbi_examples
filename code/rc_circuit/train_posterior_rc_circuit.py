@@ -16,10 +16,9 @@ ntrain_sims = 100_000
 
 data_path = '../../data/rc_circuit'
 
-#Number of samples to set to zero
-zero_samples = 0
-noise_amp = 0.1
-train_posterior(data_path, ntrain_sims, noise_amp, zero_samples)
+window_samples = (0, -1)
+x_noise_amp = 0.1
+theta_noise_amp = 0.01
+train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window_samples)
 
-   
 #os.system('scancel -u ntolley')
