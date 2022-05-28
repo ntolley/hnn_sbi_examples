@@ -15,7 +15,7 @@ save_suffix = 'sbi'
 
 prior_dict = {'amp1': {'bounds': (0, 1), 'scale_func': linear_scale_forward},
               'amp2': {'bounds': (0, 1), 'scale_func': linear_scale_forward}, 
-              'latency': {'bounds': (-20, 20), 'scale_func': linear_scale_forward}}
+              'latency': {'bounds': (-75, 75), 'scale_func': linear_scale_forward}}
 
 # Create uniform prior and sample
 prior = UniformPrior(parameters=list(prior_dict.keys()))
@@ -30,5 +30,5 @@ with open(f'{save_path}/sbi_sims//sim_metadata.pkl', 'wb') as f:
 
 run_rc_sim(prior_dict, theta_samples, tstop, save_path, save_suffix)
 
-#os.system('scancel -u ntolley')
+os.system('scancel -u ntolley')
 
