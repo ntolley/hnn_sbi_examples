@@ -14,6 +14,7 @@ from sbi import utils as sbi_utils
 from sbi import analysis as sbi_analysis
 from sbi import inference as sbi_inference
 from sklearn.decomposition import PCA
+import scipy
 
 from hnn_core import jones_2009_model, simulate_dipole, pick_connection
 rng_seed = 123
@@ -129,15 +130,20 @@ def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window
     input_type_list = {#'raw_waveform': {
                        #    'embedding_func': torch.nn.Identity,
                        #    'embedding_dict': dict(), 'feature_func': torch.nn.Identity()},
+        
                        'pca4': {
                            'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': pca4.transform},}
-                       #'pca30': {
-                       #    'embedding_func': torch.nn.Identity,
-                       #    'embedding_dict': dict(), 'feature_func': pca30.transform},
-                       #'peak': {
-                       #    'embedding_func': torch.nn.Identity,
-                       #    'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},
+                           'embedding_dict': dict(), 'feature_func': pca4.transform},
+                       'pca30': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': pca30.transform},
+                       'peak': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},
+                       'bandpower': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': partial(get_dataset_bandpower, fs=fs)}}
+    
                        #'psd': {
                        #    'embedding_func': torch.nn.Identity,
                        #    'embedding_dict': dict(), 'feature_func': partial(get_dataset_psd, fs=fs, return_freq=False)},
@@ -185,7 +191,7 @@ def validate_posterior(net, nval_sims, param_function, data_path):
 
     dt = sim_metadata['dt'] # Sampling interval used for simulation
     tstop = sim_metadata['tstop'] # Sampling interval used for simulation
-    zero_samples = posterior_metadata['zero_samples']
+    window_samples = posterior_metadata['window_samples']
 
 
     prior = UniformPrior(parameters=list(prior_dict.keys()))
@@ -194,8 +200,8 @@ def validate_posterior(net, nval_sims, param_function, data_path):
     x_orig, theta_orig = np.load(f'{data_path}/sbi_sims/x_sbi.npy'), np.load(f'{data_path}/sbi_sims/theta_sbi.npy')
     x_cond, theta_cond = np.load(f'{data_path}/sbi_sims/x_grid.npy'), np.load(f'{data_path}/sbi_sims/theta_grid.npy')
 
-    x_orig[:, :zero_samples] = np.repeat(x_orig[:, zero_samples], zero_samples).reshape(x_orig.shape[0], zero_samples)
-    x_cond[:, :zero_samples] = np.repeat(x_cond[:, zero_samples], zero_samples).reshape(x_cond.shape[0], zero_samples)
+    x_orig = x_orig[:, window_samples[0]:window_samples[1]]
+    x_cond = x_cond[:, window_samples[0]:window_samples[1]]
 
     load_info = {name: {'x_train': posterior_dict['input_dict']['feature_func'](x_orig), 
                         'x_cond': posterior_dict['input_dict']['feature_func'](x_cond)}
@@ -241,7 +247,7 @@ def validate_rc_posterior(nval_sims, data_path):
 
     dt = sim_metadata['dt'] # Sampling interval used for simulation
     tstop = sim_metadata['tstop'] # Sampling interval used for simulation
-    zero_samples = posterior_metadata['zero_samples']
+    window_samples = posterior_metadata['window_samples']
 
 
     prior = UniformPrior(parameters=list(prior_dict.keys()))
@@ -250,8 +256,8 @@ def validate_rc_posterior(nval_sims, data_path):
     x_orig, theta_orig = np.load(f'{data_path}/sbi_sims/x_sbi.npy'), np.load(f'{data_path}/sbi_sims/theta_sbi.npy')
     x_cond, theta_cond = np.load(f'{data_path}/sbi_sims/x_grid.npy'), np.load(f'{data_path}/sbi_sims/theta_grid.npy')
 
-    x_orig[:, :zero_samples] = np.repeat(x_orig[:, zero_samples], zero_samples).reshape(x_orig.shape[0], zero_samples)
-    x_cond[:, :zero_samples] = np.repeat(x_cond[:, zero_samples], zero_samples).reshape(x_cond.shape[0], zero_samples)
+    x_orig = x_orig[:, window_samples[0]:window_samples[1]]
+    x_cond = x_cond[:, window_samples[0]:window_samples[1]]
 
     load_info = {name: {'x_train': posterior_dict['input_dict']['feature_func'](x_orig), 
                         'x_cond': posterior_dict['input_dict']['feature_func'](x_cond)}
@@ -378,7 +384,7 @@ def bandpower(x, fs, fmin, fmax):
 
 # Bands freq citation: https://www.frontiersin.org/articles/10.3389/fnhum.2020.00089/full
 def get_dataset_bandpower(x, fs):
-    freq_band_list = [(8,13), (13,30), (30,50), (50,80)]
+    freq_band_list = [(0,13), (13,30), (30,50), (50,80)]
     
     x_bandpower_list = list()
     for idx in range(x.shape[0]):
