@@ -80,7 +80,7 @@ def run_rc_sim(prior_dict, theta_samples, tstop, save_path, save_suffix):
 def start_cluster():
      # Set up cluster and reserve resources
     cluster = SLURMCluster(
-        cores=32, processes=32, queue='compute', memory="256GB", walltime="20:00:00",
+        cores=32, processes=32, queue='compute', memory="256GB", walltime="5:00:00",
         job_extra=['-A csd403', '--nodes=1'], log_directory=os.getcwd() + '/slurm_out')
 
     client = Client(cluster)
@@ -131,18 +131,18 @@ def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window
                        #    'embedding_func': torch.nn.Identity,
                        #    'embedding_dict': dict(), 'feature_func': torch.nn.Identity()},
         
-                       'pca4': {
-                           'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': pca4.transform},
+                       #'pca4': {
+                       #    'embedding_func': torch.nn.Identity,
+                       #    'embedding_dict': dict(), 'feature_func': pca4.transform},
                        'pca30': {
                            'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': pca30.transform},
-                       'peak': {
-                           'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},
-                       'bandpower': {
-                           'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': partial(get_dataset_bandpower, fs=fs)}}
+                           'embedding_dict': dict(), 'feature_func': pca30.transform},}
+                       #'peak': {
+                       #    'embedding_func': torch.nn.Identity,
+                       #    'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},
+                       #'bandpower': {
+                       #    'embedding_func': torch.nn.Identity,
+                       #    'embedding_dict': dict(), 'feature_func': partial(get_dataset_bandpower, fs=fs)}}
     
                        #'psd': {
                        #    'embedding_func': torch.nn.Identity,
@@ -593,13 +593,13 @@ def hnn_beta_param_function(net, theta_dict, rng=rng):
 
     # Proximal Drive
     weights_ampa_p1 = {'L2_basket': 0.4e-6, 'L2_pyramidal': 0.2e-6,
-                       'L5_basket': 0.4e-6, 'L5_pyramidal': theta_dict['prox_exc']}
+                       'L5_basket': 0.4e-6, 'L5_pyramidal': 0.00002}
     syn_delays_p1 = {'L2_basket': 0.0, 'L2_pyramidal': 0.0,
                      'L5_basket': 0.0, 'L5_pyramidal': 0.0}
 
     net.add_bursty_drive(
         'beta_prox', tstart=beta_start, tstart_std=0., tstop=beta_start + 50.,
-        burst_rate=1., burst_std=theta_dict['prox_var'], numspikes=2, spike_isi=10,
+        burst_rate=1., burst_std=20., numspikes=2, spike_isi=10,
         n_drive_cells=10, location='proximal', weights_ampa=weights_ampa_p1,
         synaptic_delays=syn_delays_p1, event_seed=prox_seed)
     
