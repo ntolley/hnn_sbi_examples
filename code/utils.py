@@ -18,7 +18,9 @@ import scipy
 
 from hnn_core import jones_2009_model, simulate_dipole, pick_connection
 rng_seed = 123
-rng = np.random.default_rng(123)
+rng = np.random.default_rng(rng_seed)
+torch.manual_seed(rng_seed)
+np.random.seed(rng_seed)
 
 device = 'cpu'
 num_cores = 256
@@ -80,7 +82,7 @@ def run_rc_sim(prior_dict, theta_samples, tstop, save_path, save_suffix):
 def start_cluster():
      # Set up cluster and reserve resources
     cluster = SLURMCluster(
-        cores=32, processes=32, queue='compute', memory="256GB", walltime="5:00:00",
+        cores=32, processes=32, queue='compute', memory="256GB", walltime="20:00:00",
         job_extra=['-A csd403', '--nodes=1'], log_directory=os.getcwd() + '/slurm_out')
 
     client = Client(cluster)
@@ -107,10 +109,11 @@ def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window
 
 
     # Add noise for regularization
-    x_noise = np.random.random(x_orig.shape) * x_noise_amp - (x_noise_amp / 2)
+    x_noise = rng.normal(loc=0.0, scale=x_noise_amp, size=x_orig.shape)
     x_orig_noise = x_orig + x_noise
     
-    theta_noise = np.random.random(theta_orig.shape) * theta_noise_amp - (theta_noise_amp / 2)
+    theta_noise = rng.normal(loc=0.0, scale=theta_noise_amp, size=theta_orig.shape)
+    theta_orig_noise = theta_orig + theta_noise
 
     dt = sim_metadata['dt'] # Sampling interval used for simulation
     fs = (1/dt) * 1e3
@@ -158,7 +161,7 @@ def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window
         neural_posterior = sbi_utils.posterior_nn(model='maf', embedding_net=input_dict['embedding_func'](**input_dict['embedding_dict']))
         inference = sbi_inference.SNPE(prior=prior, density_estimator=neural_posterior, show_progress_bars=True, device=device)
         x_train = torch.tensor(input_dict['feature_func'](x_orig_noise)).float()
-        theta_train = torch.tensor(theta_orig).float()
+        theta_train = torch.tensor(theta_orig_noise).float()
         if x_train.dim() == 1:
             x_train= x_train.reshape(-1, 1)
 
