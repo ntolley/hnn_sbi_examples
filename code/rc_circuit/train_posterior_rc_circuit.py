@@ -21,4 +21,4 @@ x_noise_amp = 0.1
 theta_noise_amp = 0.01
 train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window_samples)
 
-os.system('scancel -u ntolley')
+#os.system('scancel -u ntolley')
