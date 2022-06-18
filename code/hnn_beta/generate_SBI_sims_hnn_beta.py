@@ -16,7 +16,9 @@ save_path = '../../data/hnn_beta/'
 save_suffix = 'sbi'
     
 prior_dict = {'dist_var': {'bounds': (0, 20), 'rescale_function': linear_scale_forward},
-              'dist_exc': {'bounds': (-6, -4), 'rescale_function': log_scale_forward}}
+              'prox_var': {'bounds': (20, 40), 'rescale_function': linear_scale_forward},
+              'dist_exc': {'bounds': (-6, -5), 'rescale_function': log_scale_forward},
+              'prox_exc': {'bounds': (-6, -5), 'rescale_function': log_scale_forward},}
 
 
 with open(f'{save_path}/sbi_sims/prior_dict.pkl', 'wb') as f:
@@ -34,4 +36,4 @@ start_cluster() # reserve resources for HNN simulations
 run_hnn_sim(net=net, param_function=hnn_beta_param_function, prior_dict=prior_dict,
             theta_samples=theta_samples, tstop=tstop, save_path=save_path, save_suffix=save_suffix)
 
-os.system('scancel -u ntolley')
+#os.system('scancel -u ntolley')

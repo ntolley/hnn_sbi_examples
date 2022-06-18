@@ -82,7 +82,7 @@ def run_rc_sim(prior_dict, theta_samples, tstop, save_path, save_suffix):
 def start_cluster():
      # Set up cluster and reserve resources
     cluster = SLURMCluster(
-        cores=32, processes=32, queue='compute', memory="256GB", walltime="20:00:00",
+        cores=32, processes=32, queue='compute', memory="256GB", walltime="10:00:00",
         job_extra=['-A csd403', '--nodes=1'], log_directory=os.getcwd() + '/slurm_out')
 
     client = Client(cluster)
@@ -353,13 +353,14 @@ def simulator_rc(theta, prior_dict, tstop):
     v_out = odeint(dVdt, y0, t_vec, args=(pulse_diff, amp1, amp2), hmax=dt)
     return v_out
 
+
 def dVdt(V, t, pulse_diff, amp1, amp2):
     """RC Circuit model of passive neuron
     amp1 and amp2 correspond to magnitude of current injection"""
     
     E = 0
     R = 1
-    tau = 6
+    C = 6
     
     pulse_width = 20
     
@@ -377,7 +378,7 @@ def dVdt(V, t, pulse_diff, amp1, amp2):
     
     I = i1 + i2
         
-    return (E - V + R * I) / tau
+    return (((E - V) / R) + I) / C
 
 def bandpower(x, fs, fmin, fmax):
     f, Pxx = scipy.signal.periodogram(x, fs=fs)
@@ -584,7 +585,7 @@ def hnn_beta_param_function(net, theta_dict, rng=rng):
     dist_seed = rng.integers(1000)
 
     # Distal Drive
-    weights_ampa_d1 = {'L2_basket': 0.8e-6, 'L2_pyramidal': 0.4e-6,
+    weights_ampa_d1 = {'L2_basket': 0.8e-4, 'L2_pyramidal': 0.4e-4,
                        'L5_pyramidal': theta_dict['dist_exc']}
     syn_delays_d1 = {'L2_basket': 0.0, 'L2_pyramidal': 0.0,
                      'L5_pyramidal': 0.0}
@@ -595,14 +596,14 @@ def hnn_beta_param_function(net, theta_dict, rng=rng):
         synaptic_delays=syn_delays_d1, event_seed=dist_seed)
 
     # Proximal Drive
-    weights_ampa_p1 = {'L2_basket': 0.4e-6, 'L2_pyramidal': 0.2e-6,
-                       'L5_basket': 0.4e-6, 'L5_pyramidal': 0.00002}
+    weights_ampa_p1 = {'L2_basket': 0.4e-4, 'L2_pyramidal': 0.2e-4,
+                       'L5_basket': 0.4e-4, 'L5_pyramidal': theta_dict['prox_exc']}
     syn_delays_p1 = {'L2_basket': 0.0, 'L2_pyramidal': 0.0,
                      'L5_basket': 0.0, 'L5_pyramidal': 0.0}
 
     net.add_bursty_drive(
         'beta_prox', tstart=beta_start, tstart_std=0., tstop=beta_start + 50.,
-        burst_rate=1., burst_std=20., numspikes=2, spike_isi=10,
+        burst_rate=1., burst_std=theta_dict['prox_var'], numspikes=2, spike_isi=10,
         n_drive_cells=10, location='proximal', weights_ampa=weights_ampa_p1,
         synaptic_delays=syn_delays_p1, event_seed=prox_seed)
     
