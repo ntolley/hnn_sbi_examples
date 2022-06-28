@@ -19,7 +19,7 @@ data_path = '../../data/hnn_beta'
 #Number of samples to set to zero
 window_samples = (316, 516)
 x_noise_amp = 1e-5
-theta_noise_amp = 0.01
+theta_noise_amp = 0.0
 train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window_samples)
 
    

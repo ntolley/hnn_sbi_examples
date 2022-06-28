@@ -26,6 +26,27 @@ device = 'cpu'
 num_cores = 256
 
 def run_hnn_sim(net, param_function, prior_dict, theta_samples, tstop, save_path, save_suffix):
+    """Run parallel HNN simulations using Dask distributed interface
+    
+    Parameters
+    ----------
+    net: Network object
+    
+    param_function: function definition
+        Function which accepts theta_dict and updates simulation parameters 
+    prior_dict: dict 
+        Dictionary storing information to map uniform sampled parameters to prior distribution.
+        Form of {'param_name': {'bounds': (lower_bound, upper_bound), 'scale_func': callable}}.
+    theta_samples: array-like
+        Unscaled paramter values in range of (0,1) sampled from prior distribution
+    tstop: int
+        Simulation stop time (ms)
+    save_path: str
+        Location to store simulations. Must have subdirectories 'sbi_sims/' and 'temp/'
+    save_suffix: str
+        Name appended to end of output files
+    """
+    
     # create simulator object, rescale function transforms (0,1) to range specified in prior_dict    
     simulator = partial(simulator_hnn, prior_dict=prior_dict, param_function=param_function,
                         network_model=net, tstop=tstop)
@@ -58,6 +79,22 @@ def run_hnn_sim(net, param_function, prior_dict, theta_samples, tstop, save_path
         os.remove(f)
         
 def run_rc_sim(prior_dict, theta_samples, tstop, save_path, save_suffix):
+    """Run RC circuit simulations
+    
+    Parameters
+    ----------
+    prior_dict: dict 
+        Dictionary storing information to map uniform sampled parameters to prior distribution.
+        Form of {'param_name': {'bounds': (lower_bound, upper_bound), 'scale_func': callable}}.
+    theta_samples: array-like
+        Unscaled paramter values in range of (0,1) sampled from prior distribution
+    tstop: int
+        Simulation stop time (ms)
+    save_path: str
+        Location to store simulations. Must have subdirectories 'sbi_sims/' and 'temp/'
+    save_suffix: str
+        Name appended to end of output files
+    """
     # Generate simulations
     num_sims = theta_samples.shape[0]
     step_size = num_cores
@@ -80,6 +117,7 @@ def run_rc_sim(prior_dict, theta_samples, tstop, save_path, save_suffix):
     np.save(theta_name, theta_sims)     
         
 def start_cluster():
+    """Reserve SLURM resources using Dask Distributed interface"""
      # Set up cluster and reserve resources
     cluster = SLURMCluster(
         cores=32, processes=32, queue='compute', memory="256GB", walltime="10:00:00",
@@ -92,6 +130,7 @@ def start_cluster():
     client.cluster.scale(num_cores)
         
 def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window_samples):
+    """Train sbi posterior distribution"""
     posterior_dict = dict()
     posterior_dict_training_data = dict()
 
@@ -431,7 +470,11 @@ def psd_peak_func(x_raw, fs, tstop):
     x_peak = get_dataset_peaks(x_raw, tstop=tstop)
     return np.hstack([x_psd, x_peak])
 
-def load_posterior(state_dict, x_infer, theta_infer, prior, embedding_net):    
+def load_posterior(state_dict, x_infer, theta_infer, prior, embedding_net):
+    """Load a pretrained SBI posterior distribution
+    Parameters
+    ----------
+    """
     neural_posterior = sbi_utils.posterior_nn(model='maf', embedding_net=embedding_net)
     inference = sbi_inference.SNPE(prior=prior, density_estimator=neural_posterior, show_progress_bars=True, device=device)
     inference.append_simulations(theta_infer, x_infer, proposal=prior)
@@ -444,7 +487,14 @@ def load_posterior(state_dict, x_infer, theta_infer, prior, embedding_net):
     return posterior
 
 class UniformPrior(sbi_utils.BoxUniform):
+    """Prior distribution object that generates uniform sample on range (0,1)"""
     def __init__(self, parameters):
+        """
+        Parameters
+        ----------
+        parameters: list of str
+            List of parameter names for prior distribution
+        """
         self.parameters = parameters
         low = len(parameters)*[0]
         high = len(parameters)*[1]
@@ -489,7 +539,10 @@ class HNNSimulator:
         ----------
         theta_dict: dict
             Dictionary indexing parameter values to be updated. Keys must match those defined
-            in prior_dict.
+            in prior_dict
+            
+        Returns: array-like
+            Simulated Output
         """        
         assert len(theta_dict) == len(self.prior_dict)
         assert theta_dict.keys() == self.prior_dict.keys()
@@ -534,6 +587,11 @@ def simulator_hnn(theta, prior_dict, param_function, network_model,
     return_objects: bool
         If true, returns tuple of (Network, Dipole) objects. If False, a preprocessed time series
         of the aggregate current dipole (Dipole.data['agg']) is returned.
+        
+    Returns
+    -------
+    x: array-like
+        Simulated output
     """
 
     # create simulator
@@ -671,10 +729,21 @@ def load_prerun_simulations(x_files, theta_files, downsample=1, save_name=None, 
     else:
         return x_all, theta_all
     
-def sample_from_grid(x_grid, posterior, n_samples):
-    return
-    
 def get_parameter_recovery(theta_val, theta_cond, n_samples=10):
+    """Calculate the PPC using root mean squared error
+    Parameters
+    ----------
+    x_val: array-like
+    
+    x_cond: array-like
+    
+    n_samples: int
+    
+    Returns
+    -------
+    dist_array: array-like
+    """
+    
     dist_list = list()
     for cond_idx in range(theta_cond.shape[0]):
         start_idx, stop_idx = cond_idx*n_samples, (cond_idx+1)*n_samples
@@ -685,6 +754,20 @@ def get_parameter_recovery(theta_val, theta_cond, n_samples=10):
     return dist_array
 
 def get_posterior_predictive_check(x_val, x_cond, n_samples=10):
+    """Calculate the PPC using root mean squared error
+    Parameters
+    ----------
+    x_val: array-like
+    
+    x_cond: array-like
+    
+    n_samples: int
+    
+    Returns
+    -------
+    dist_array: array-like
+        
+    """
     dist_list = list()
     for cond_idx in range(x_cond.shape[0]):
         start_idx, stop_idx = cond_idx*n_samples, (cond_idx+1)*n_samples
