@@ -34,7 +34,7 @@ with open(f'{data_path}/posteriors/posterior_metadata.pkl', 'rb') as output_file
     
 dt = sim_metadata['dt'] # Sampling interval used for simulation
 tstop = sim_metadata['tstop'] # Sampling interval used for simulation
-zero_samples = posterior_metadata['zero_samples']
+window_samples = posterior_metadata['window_samples']
 
 t_vec = np.linspace(0, tstop, np.round(tstop/dt).astype(int))
 
@@ -47,16 +47,16 @@ limits = list(prior_dict.values())
 x_orig, theta_orig = np.load(f'{data_path}/sbi_sims/x_sbi.npy'), np.load(f'{data_path}/sbi_sims/theta_sbi.npy')
 x_cond, theta_cond = np.load(f'{data_path}/sbi_sims/x_grid.npy'), np.load(f'{data_path}/sbi_sims/theta_grid.npy')
 
-x_orig[:, :zero_samples] = np.repeat(x_orig[:, zero_samples], zero_samples).reshape(x_orig.shape[0], zero_samples)
-x_cond[:, :zero_samples] = np.repeat(x_cond[:, zero_samples], zero_samples).reshape(x_cond.shape[0], zero_samples)
+x_orig = x_orig[:, window_samples[0]:window_samples[1]]
+x_cond = x_cond[:, window_samples[0]:window_samples[1]]
 
-load_info = {name: {'x_train': posterior_dict['input_dict']['feature_func'](x_orig), 
-                    'x_cond': posterior_dict['input_dict']['feature_func'](x_cond)}
-             for name, posterior_dict in posterior_state_dicts.items()}
+#load_info = {name: {'x_train': posterior_dict['input_dict']['feature_func'](x_orig), 
+#                    'x_cond': posterior_dict['input_dict']['feature_func'](x_cond)}
+#             for name, posterior_dict in posterior_state_dicts.items()}
 
 # Parameter recovery plots
-plot_labels = ['Distal Inh dist', 'Proximal Inh dist', 'Distal Exc dist', 'Proximal Exc dist']
-param_labels = ['Distal Inh (log g)', 'Proximal Inh (log g)', 'Distal Exc (log g)', 'Proximal Exc (log g)']
+plot_labels = ['$I_d$ PRE', '$I_p$ PRE', '$E_d$ PRE', '$E_p$ PRE']
+param_labels = ['$I_d$ (log $\\bar{g}$)', '$I_p$ (log $\\bar{g}$)', '$E_d$ (log $\\bar{g}$)', '$E_p$ (log $\\bar{g}$)']
 all_bounds = [param_dict['bounds'] for param_dict in prior_dict.values()]
 
 labelsize=16
@@ -94,7 +94,7 @@ for input_type, posterior_dict in posterior_state_dicts.items():
     print(input_type)
 
     x_val = np.load(f'{data_path}/sbi_sims/x_{input_type}_validation.npy')
-    x_val[:, :zero_samples] = np.zeros(x_val[:, :zero_samples].shape)
+    x_val = x_val[:, window_samples[0]:window_samples[1]]
 
     theta_val = np.load(f'{data_path}/sbi_sims/theta_{input_type}_validation.npy')
 
