@@ -333,7 +333,7 @@ def validate_rc_posterior(nval_sims, data_path):
 def batch(simulator, seq, theta_samples, save_path):
     print(f'Sim Idx: {(seq[0], seq[-1])}')
     # Create lazy list of tasks
-    res_list= []
+    res_list = list()
     for sim_idx in range(len(seq)):
         res = dask.delayed(simulator)(theta_samples[sim_idx,:])
         res_list.append(res)
