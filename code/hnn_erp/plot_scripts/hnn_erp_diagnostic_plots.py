@@ -105,14 +105,14 @@ for input_type, posterior_dict in posterior_state_dicts.items():
         dist_list.append(dist)
     dist_array = np.array(dist_list)
 
-    plt.figure(figsize=(5,5))
+    plt.figure(figsize=(4,4))
     xticks = np.round(np.linspace(all_bounds[3][0], all_bounds[3][1], 10), decimals=2)
     yticks = np.round(np.linspace(all_bounds[0][0], all_bounds[0][1], 10), decimals=2)
     sns.heatmap(dist_array.reshape(10,10,10,10)[:,5,5,:], vmin=0, vmax=0.075,
                 xticklabels=xticks, yticklabels=yticks, cmap='viridis')
     plt.title(input_type)
-    plt.xlabel(param_labels[3])
-    plt.ylabel(param_labels[0])
+    plt.xlabel(param_labels[3], fontsize=labelsize)
+    plt.ylabel(param_labels[0], fontsize=labelsize)
     plt.tight_layout()
     plt.savefig(f'../../../figures/{sim_type}/ppc_{sim_type}_{input_type}.svg')
     plt.close()

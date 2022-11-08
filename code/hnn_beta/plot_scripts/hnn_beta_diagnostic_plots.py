@@ -7,7 +7,7 @@ import torch
 from functools import partial
 from scipy.stats import wasserstein_distance
 from utils import (linear_scale_forward, log_scale_forward, UniformPrior,
-                   simulator_hnn, hnn_beta_param_function, load_prerun_simulations,
+                   simulator_hnn, hnn_erp_param_function, load_prerun_simulations,
                    get_dataset_psd, get_dataset_peaks, load_posterior)
 from sklearn.decomposition import PCA
 
@@ -23,18 +23,18 @@ device = 'cpu'
 sim_type = 'hnn_beta'
 data_path = f'../../../data/{sim_type}'
 
-with open(f'{data_path}/posteriors/hnn_rc_posterior_dicts.pkl', 'rb') as output_file:
+with open(f'{data_path}/posteriors/posterior_dicts.pkl', 'rb') as output_file:
     posterior_state_dicts = dill.load(output_file)
 with open(f'{data_path}/sbi_sims/prior_dict.pkl', 'rb') as output_file:
     prior_dict = dill.load(output_file)
 with open(f'{data_path}/sbi_sims/sim_metadata.pkl', 'rb') as output_file:
     sim_metadata = dill.load(output_file)
-with open(f'{data_path}/posteriors/hnn_rc_posterior_metadata.pkl', 'rb') as output_file:
+with open(f'{data_path}/posteriors/posterior_metadata.pkl', 'rb') as output_file:
     posterior_metadata = dill.load(output_file)
     
 dt = sim_metadata['dt'] # Sampling interval used for simulation
 tstop = sim_metadata['tstop'] # Sampling interval used for simulation
-zero_samples = posterior_metadata['zero_samples']
+window_samples = posterior_metadata['window_samples']
 
 t_vec = np.linspace(0, tstop, np.round(tstop/dt).astype(int))
 
@@ -47,18 +47,15 @@ limits = list(prior_dict.values())
 x_orig, theta_orig = np.load(f'{data_path}/sbi_sims/x_sbi.npy'), np.load(f'{data_path}/sbi_sims/theta_sbi.npy')
 x_cond, theta_cond = np.load(f'{data_path}/sbi_sims/x_grid.npy'), np.load(f'{data_path}/sbi_sims/theta_grid.npy')
 
-x_orig[:, :zero_samples] = np.repeat(x_orig[:, zero_samples], zero_samples).reshape(x_orig.shape[0], zero_samples)
-x_cond[:, :zero_samples] = np.repeat(x_cond[:, zero_samples], zero_samples).reshape(x_cond.shape[0], zero_samples)
-
-load_info = {name: {'x_train': posterior_dict['input_dict']['feature_func'](x_orig), 
-                    'x_cond': posterior_dict['input_dict']['feature_func'](x_cond)}
-             for name, posterior_dict in posterior_state_dicts.items()}
+x_orig = x_orig[:, window_samples[0]:window_samples[1]]
+x_cond = x_cond[:, window_samples[0]:window_samples[1]]
 
 # Parameter recovery plots
 plot_labels = ['Distal Var', 'Proximal Var', 'Distal exc', 'Proximal exc']
-param_labels = ['Distal Var (ms)', 'Proximal Var (ms)', 'Distal exc log(g)', 'Proximal exc log(g)']
+param_labels = ['$D_{\sigma^2}$ ($\mathrm{ms}^2$)', '$P_{\sigma^2}$ ($\mathrm{ms}^2$)', '$D_e$ (log $\\bar{g}$)', '$P_e$ (log $\\bar{g}$)']
 all_bounds = [param_dict['bounds'] for param_dict in prior_dict.values()]
 
+labelsize=16
 for input_type, posterior_dict in posterior_state_dicts.items():
     print(input_type)
     
@@ -72,16 +69,16 @@ for input_type, posterior_dict in posterior_state_dicts.items():
         dist_list.append(dist)
     dist_array = np.array(dist_list)
 
-    plt.figure(figsize=(13,4))
+    plt.figure(figsize=(17,4))
     for plot_idx in range(4):
         plt.subplot(1,4,plot_idx+1)
-        xticks = np.round(np.linspace(all_bounds[3][0], all_bounds[3][1], 10), decimals=2)
+        xticks = np.round(np.linspace(all_bounds[1][0], all_bounds[1][1], 10), decimals=2)
         yticks = np.round(np.linspace(all_bounds[0][0], all_bounds[0][1], 10), decimals=2)
-        sns.heatmap(dist_array[:,plot_idx].reshape(10,10,10,10)[:,5,5,:], vmin=0, vmax=0.3,
+        sns.heatmap(dist_array[:,plot_idx].reshape(10,10,10,10)[:,:,5,5], vmin=0, vmax=0.3,
                     xticklabels=xticks, yticklabels=yticks)
         plt.title(plot_labels[plot_idx])
-        plt.xlabel(param_labels[2])
-        plt.ylabel(param_labels[0])
+        plt.xlabel(param_labels[1], fontsize=labelsize)
+        plt.ylabel(param_labels[0], fontsize=labelsize)
     plt.tight_layout()
     plt.savefig(f'../../../figures/{sim_type}/wasserstein_{sim_type}_{input_type}.svg')
     plt.close()
@@ -93,7 +90,7 @@ for input_type, posterior_dict in posterior_state_dicts.items():
     print(input_type)
 
     x_val = np.load(f'{data_path}/sbi_sims/x_{input_type}_validation.npy')
-    x_val[:, :zero_samples] = np.zeros(x_val[:, :zero_samples].shape)
+    x_val = x_val[:, window_samples[0]:window_samples[1]]
 
     theta_val = np.load(f'{data_path}/sbi_sims/theta_{input_type}_validation.npy')
 
@@ -105,13 +102,13 @@ for input_type, posterior_dict in posterior_state_dicts.items():
     dist_array = np.array(dist_list)
 
     plt.figure(figsize=(5,5))
-    xticks = np.round(np.linspace(all_bounds[3][0], all_bounds[3][1], 10), decimals=2)
+    xticks = np.round(np.linspace(all_bounds[1][0], all_bounds[1][1], 10), decimals=2)
     yticks = np.round(np.linspace(all_bounds[0][0], all_bounds[0][1], 10), decimals=2)
-    sns.heatmap(dist_array.reshape(10,10,10,10)[:,5,5,:], vmin=0, vmax=0.00012,
+    sns.heatmap(dist_array.reshape(10,10,10,10)[:,:,5,5], vmin=0, vmax=0.00020,
                 xticklabels=xticks, yticklabels=yticks, cmap='viridis')
     plt.title(input_type)
-    plt.xlabel(param_labels[2])
-    plt.ylabel(param_labels[0])
+    plt.xlabel(param_labels[1], fontsize=labelsize)
+    plt.ylabel(param_labels[0], fontsize=labelsize)
     plt.tight_layout()
     plt.savefig(f'../../../figures/{sim_type}/ppc_{sim_type}_{input_type}.svg')
     plt.close()
