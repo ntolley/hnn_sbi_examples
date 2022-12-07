@@ -55,8 +55,9 @@ x_cond = x_cond[:, window_samples[0]:window_samples[1]]
 #             for name, posterior_dict in posterior_state_dicts.items()}
 
 # Parameter recovery plots
-plot_labels = ['$I_d$ PRE', '$I_p$ PRE', '$E_d$ PRE', '$E_p$ PRE']
-param_labels = ['$I_d$ (log $\\bar{g}$)', '$I_p$ (log $\\bar{g}$)', '$E_d$ (log $\\bar{g}$)', '$E_p$ (log $\\bar{g}$)']
+plot_labels = ['$I_{\\rm{L2}}$ PRE', '$I_{\\rm{L5}}$ PRE', '$E_{\\rm{L2}}$ PRE', '$E_{\\rm{L5}}$ PRE']
+param_labels = ['$I_{\\rm{L2}}$ (log $\\bar{g}$)', '$I_{\\rm{L5}}$ (log $\\bar{g}$)',
+                '$E_{\\rm{L2}}$ (log $\\bar{g}$)', '$E_{\\rm{L5}}$ (log $\\bar{g}$)']
 all_bounds = [param_dict['bounds'] for param_dict in prior_dict.values()]
 
 labelsize=16
