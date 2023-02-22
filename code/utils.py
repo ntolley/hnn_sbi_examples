@@ -169,9 +169,9 @@ def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window
     with open(posterior_metadata_save_label, 'wb') as output_file:
             dill.dump(posterior_metadata, output_file)
 
-    input_type_list = {'raw_waveform': {
-                           'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': torch.nn.Identity()},
+    input_type_list = {#'raw_waveform': {
+                       #    'embedding_func': torch.nn.Identity,
+                       #    'embedding_dict': dict(), 'feature_func': torch.nn.Identity()},
         
                        'pca4': {
                            'embedding_func': torch.nn.Identity,
