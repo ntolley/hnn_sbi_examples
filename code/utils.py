@@ -15,6 +15,7 @@ from sbi import analysis as sbi_analysis
 from sbi import inference as sbi_inference
 from sklearn.decomposition import PCA
 import scipy
+import itertools
 
 from hnn_core import jones_2009_model, simulate_dipole, pick_connection
 rng_seed = 123
@@ -775,3 +776,55 @@ def get_posterior_predictive_check(x_val, x_cond, n_samples=10):
         dist_list.append(dist)
     dist_array = np.array(dist_list)
     return dist_array
+
+def psr(p1_points, p2_points, step_size, num_dim=1):
+    """Calculate proportion of similar responses (PSR)
+    Parameters
+    ----------
+    p1_points: array-like
+    
+    p2_points: array-like
+    
+    step_size: float
+    
+    num_dim: int
+    
+    Returns
+    -------
+    overlap_value: float
+        Approximately bounded on [0,1]
+    """
+    points = np.vstack([p1_points, p2_points]).T
+    min_points = np.min(points, axis=1)
+    overlap_value = np.sum(min_points * (step_size ** num_dim))
+    return overlap_value
+
+def pir(p1_points, p2_points, step_size, num_dim=1):
+    """Calculate proportion of interchangeable responses (PIR)
+    Parameters
+    ----------
+    p1_points: array-like
+    
+    p2_points: array-like
+    
+    step_size: float
+    
+    num_dim: int
+    
+    Returns
+    -------
+    overlap_value: float
+        Approximately bounded on [0,1]
+    """
+    num_points = len(p1_points)
+    sum_indices = np.array(list(itertools.permutations(range(num_points), 2)))
+
+    left_product = p1_points[sum_indices[:,0]] * p2_points[sum_indices[:,1]]
+    right_product = p1_points[sum_indices[:,1]] * p2_points[sum_indices[:,0]]
+    
+    points = np.vstack([left_product, right_product]).T
+    min_points = np.min(points, axis=1)
+
+    overlap_value = np.sum(min_points * (step_size ** (num_dim * 2)))
+    
+    return overlap_value
