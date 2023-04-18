@@ -29,5 +29,4 @@ theta_samples = torch.tensor(theta_samples)
 
 run_rc_sim(prior_dict, theta_samples, tstop, save_path, save_suffix)
 
-#os.system('scancel -u ntolley')
 

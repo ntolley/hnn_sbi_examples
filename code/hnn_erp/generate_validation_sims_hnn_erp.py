@@ -11,5 +11,3 @@ data_path = '../../data/hnn_erp'
 
 start_cluster() # reserve resources for HNN simulations
 validate_posterior(net, nval_sims, hnn_erp_param_function, data_path)
-
-os.system('scancel -u ntolley')

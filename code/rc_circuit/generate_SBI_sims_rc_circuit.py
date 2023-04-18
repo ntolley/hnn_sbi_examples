@@ -30,5 +30,4 @@ with open(f'{save_path}/sbi_sims//sim_metadata.pkl', 'wb') as f:
 
 run_rc_sim(prior_dict, theta_samples, tstop, save_path, save_suffix)
 
-os.system('scancel -u ntolley')
 

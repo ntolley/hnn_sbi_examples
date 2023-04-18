@@ -35,5 +35,3 @@ start_cluster() # reserve resources for HNN simulations
 run_hnn_sim(net=net, param_function=hnn_erp_param_function, prior_dict=prior_dict,
             theta_samples=theta_samples, tstop=tstop, save_path=save_path, save_suffix=save_suffix)
 
-os.system('scancel -u ntolley')
-
