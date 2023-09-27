@@ -207,7 +207,7 @@ def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window
 
         inference.append_simulations(theta_train, x_train, proposal=prior)
 
-        nn_posterior = inference.train(num_atoms=10, training_batch_size=5000, use_combined_loss=True, discard_prior_samples=True, max_num_epochs=None, show_train_summary=True)
+        nn_posterior = inference.train(num_atoms=10, training_batch_size=5000, use_combined_loss=True, discard_prior_samples=True, show_train_summary=True)
 
         posterior_dict[input_type] = {'posterior': nn_posterior.state_dict(),
                                     'n_params': n_params,
