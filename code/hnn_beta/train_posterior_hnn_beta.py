@@ -14,7 +14,7 @@ device = 'cpu'
 
 ntrain_sims = 100_000
 
-data_path = '../../data/hnn_beta'
+data_path = '../../data/hnn_beta_old'
 
 #Number of samples to set to zero
 window_samples = (316, 516)

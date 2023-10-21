@@ -12,13 +12,13 @@ dt = 0.5
 
 net = jones_2009_model()
    
-save_path = '../../data/hnn_beta/'
+save_path = '../../data/hnn_beta_new/'
 save_suffix = 'sbi'
     
 prior_dict = {'dist_var': {'bounds': (0, 20), 'rescale_function': linear_scale_forward},
-              'prox_var': {'bounds': (20, 40), 'rescale_function': linear_scale_forward},
-              'dist_exc': {'bounds': (-6, -5), 'rescale_function': log_scale_forward},
-              'prox_exc': {'bounds': (-6, -5), 'rescale_function': log_scale_forward},}
+              'prox_var': {'bounds': (0, 40), 'rescale_function': linear_scale_forward},
+              'dist_exc': {'bounds': (-6, -4), 'rescale_function': log_scale_forward},
+              'prox_exc': {'bounds': (-6, -4), 'rescale_function': log_scale_forward},}
 
 
 with open(f'{save_path}/sbi_sims/prior_dict.pkl', 'wb') as f:
