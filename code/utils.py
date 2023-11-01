@@ -174,18 +174,18 @@ def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window
                        #    'embedding_func': torch.nn.Identity,
                        #    'embedding_dict': dict(), 'feature_func': torch.nn.Identity()},
         
-                       'pca4': {
-                           'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': pca4.transform},
+                       # 'pca4': {
+                       #     'embedding_func': torch.nn.Identity,
+                       #     'embedding_dict': dict(), 'feature_func': pca4.transform},
                        'pca30': {
                            'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': pca30.transform},
-                       'peak': {
-                           'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},
-                       'bandpower': {
-                           'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': partial(get_dataset_bandpower, fs=fs)}}
+                           'embedding_dict': dict(), 'feature_func': pca30.transform},}
+                       # 'peak': {
+                       #     'embedding_func': torch.nn.Identity,
+                       #     'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},
+                       # 'bandpower': {
+                       #     'embedding_func': torch.nn.Identity,
+                       #     'embedding_dict': dict(), 'feature_func': partial(get_dataset_bandpower, fs=fs)}}
     
                        #'psd': {
                        #    'embedding_func': torch.nn.Identity,
@@ -644,8 +644,10 @@ def hnn_beta_param_function(net, theta_dict, rng=rng):
     dist_seed = rng.integers(1000)
 
     # Distal Drive
+    # weights_ampa_d1 = {'L2_basket': 0.8e-4, 'L2_pyramidal': 0.4e-4,
+    #                    'L5_pyramidal': theta_dict['dist_exc']}
     weights_ampa_d1 = {'L2_basket': 0.8e-4, 'L2_pyramidal': 0.4e-4,
-                       'L5_pyramidal': theta_dict['dist_exc']}
+                       'L5_pyramidal': 2e-5}
     syn_delays_d1 = {'L2_basket': 0.0, 'L2_pyramidal': 0.0,
                      'L5_pyramidal': 0.0}
     net.add_bursty_drive(
@@ -655,8 +657,10 @@ def hnn_beta_param_function(net, theta_dict, rng=rng):
         synaptic_delays=syn_delays_d1, event_seed=dist_seed)
 
     # Proximal Drive
+    # weights_ampa_p1 = {'L2_basket': 0.4e-4, 'L2_pyramidal': 0.2e-4,
+    #                    'L5_basket': 0.4e-4, 'L5_pyramidal': theta_dict['prox_exc']}
     weights_ampa_p1 = {'L2_basket': 0.4e-4, 'L2_pyramidal': 0.2e-4,
-                       'L5_basket': 0.4e-4, 'L5_pyramidal': theta_dict['prox_exc']}
+                       'L5_basket': 0.4e-4, 'L5_pyramidal': 2e-5}
     syn_delays_p1 = {'L2_basket': 0.0, 'L2_pyramidal': 0.0,
                      'L5_basket': 0.0, 'L5_pyramidal': 0.0}
 
