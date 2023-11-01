@@ -12,7 +12,7 @@ import dill
 
 device = 'cpu'
 
-ntrain_sims = 100_000
+ntrain_sims = 10_000
 
 data_path = '../../data/hnn_beta'
 
