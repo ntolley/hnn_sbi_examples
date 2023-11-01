@@ -130,7 +130,8 @@ def start_cluster():
     
     client.cluster.scale(num_cores)
         
-def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window_samples):
+def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window_samples,
+                    scale_factor=1, freq_band_list=[(0,13), (13,30), (30,50), (50,80)]):
     """Train sbi posterior distribution"""
     posterior_dict = dict()
     posterior_dict_training_data = dict()
@@ -146,7 +147,6 @@ def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window
     # x_orig stores full waveform to be used for embedding
     x_orig, theta_orig = np.load(f'{data_path}/sbi_sims/x_sbi.npy'), np.load(f'{data_path}/sbi_sims/theta_sbi.npy')
     x_orig, theta_orig = x_orig[:ntrain_sims, window_samples[0]:window_samples[1]], theta_orig[:ntrain_sims, :]
-
 
     # Add noise for regularization
     x_noise = rng.normal(loc=0.0, scale=x_noise_amp, size=x_orig.shape)
@@ -174,18 +174,24 @@ def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window
                        #    'embedding_func': torch.nn.Identity,
                        #    'embedding_dict': dict(), 'feature_func': torch.nn.Identity()},
         
-                       # 'pca4': {
-                       #     'embedding_func': torch.nn.Identity,
-                       #     'embedding_dict': dict(), 'feature_func': pca4.transform},
+                       'pca4': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': pca4.transform},
                        'pca30': {
                            'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': pca30.transform},}
-                       # 'peak': {
-                       #     'embedding_func': torch.nn.Identity,
-                       #     'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},
-                       # 'bandpower': {
-                       #     'embedding_func': torch.nn.Identity,
-                       #     'embedding_dict': dict(), 'feature_func': partial(get_dataset_bandpower, fs=fs)}}
+                           'embedding_dict': dict(), 'feature_func': pca30.transform},
+                       'peak': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},
+                       'bandpower': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': partial(get_dataset_bandpower, fs=fs,
+                                                                             freq_band_list=freq_band_list, scale_factor=scale_factor)},
+                       'all_features': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': partial(
+                               get_all_features, fs=fs, pca30=pca30, freq_band_list=freq_band_list,
+                               scale_factor=scale_factor, tstop=sim_metadata['tstop'])}}
     
                        #'psd': {
                        #    'embedding_func': torch.nn.Identity,
@@ -427,12 +433,11 @@ def bandpower(x, fs, fmin, fmax):
     return np.trapz(Pxx[ind_min: ind_max], f[ind_min: ind_max])
 
 # Bands freq citation: https://www.frontiersin.org/articles/10.3389/fnhum.2020.00089/full
-def get_dataset_bandpower(x, fs):
-    freq_band_list = [(0,13), (13,30), (30,50), (50,80)]
+def get_dataset_bandpower(x, fs, freq_band_list=[(0,13), (13,30), (30,50), (50,80)], scale_factor=1):
     
     x_bandpower_list = list()
     for idx in range(x.shape[0]):
-        x_bandpower = np.array([bandpower(x[idx,:], fs, freq_band[0], freq_band[1]) for freq_band in freq_band_list])
+        x_bandpower = np.array([bandpower(x[idx,:] * scale_factor, fs, freq_band[0], freq_band[1]) for freq_band in freq_band_list])
         x_bandpower_list.append(x_bandpower)
         
     return np.vstack(np.log(x_bandpower_list))
@@ -466,10 +471,19 @@ def get_dataset_peaks(x_raw, tstop=500):
 
     return peak_features
 
-def psd_peak_func(x_raw, fs, tstop):
-    x_psd = get_dataset_psd(x_raw, fs=fs, return_freq=False)
+# def psd_peak_func(x_raw, fs, tstop):
+#     x_psd = get_dataset_psd(x_raw, fs=fs, return_freq=False)
+#     x_peak = get_dataset_peaks(x_raw, tstop=tstop)
+#     return np.hstack([x_psd, x_peak])
+
+def get_all_features(x_raw, fs, pca30, freq_band_list=[(0,13), (13,30), (30,50), (50,80)], scale_factor=1, tstop=500):
+  
     x_peak = get_dataset_peaks(x_raw, tstop=tstop)
-    return np.hstack([x_psd, x_peak])
+    x_bandpower = get_dataset_bandpower(x_raw, fs, freq_band_list, scale_factor)
+    x_pca30 = pca30.transform(x_raw)
+    
+    return np.hstack([x_peak, x_bandpower, x_pca30])
+    
 
 def load_posterior(state_dict, x_infer, theta_infer, prior, embedding_net):
     """Load a pretrained SBI posterior distribution

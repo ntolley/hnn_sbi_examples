@@ -18,9 +18,14 @@ data_path = '../../data/hnn_beta'
 
 #Number of samples to set to zero
 window_samples = (316, 516)
-# window_samples = (291, 541)
-# window_samples = (366, 466)
 x_noise_amp = 1e-5
 theta_noise_amp = 0.0
-train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window_samples)
+
+# Signals are really tiny, need to scale and look at high frequency bands
+# Otherwise log(bandpower) = log(0.0) = -np.inf
+scale_factor=60_000
+freq_band_list=[(13,30), (30,50), (50,80)]
+
+train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window_samples,
+                scale_factor=scale_factor, freq_band_list=freq_band_list)
 

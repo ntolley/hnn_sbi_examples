@@ -20,7 +20,7 @@ save_suffix = 'sbi'
 #               'dist_exc': {'bounds': (-6, -4), 'rescale_function': log_scale_forward},
 #               'prox_exc': {'bounds': (-6, -4), 'rescale_function': log_scale_forward},}
 
-prior_dict = {'dist_var': {'bounds': (0,20), 'rescale_function': linear_scale_forward},
+prior_dict = {'dist_var': {'bounds': (0,10), 'rescale_function': linear_scale_forward},
               'prox_var': {'bounds': (0,40), 'rescale_function': linear_scale_forward},}
 
 with open(f'{save_path}/sbi_sims/prior_dict.pkl', 'wb') as f:
