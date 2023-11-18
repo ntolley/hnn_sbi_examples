@@ -174,12 +174,12 @@ def train_posterior(data_path, ntrain_sims, x_noise_amp, theta_noise_amp, window
                        #    'embedding_func': torch.nn.Identity,
                        #    'embedding_dict': dict(), 'feature_func': torch.nn.Identity()},
         
-                       'pca4': {
-                           'embedding_func': torch.nn.Identity,
-                           'embedding_dict': dict(), 'feature_func': pca4.transform},
                        'pca30': {
                            'embedding_func': torch.nn.Identity,
                            'embedding_dict': dict(), 'feature_func': pca30.transform},
+                       'pca4': {
+                           'embedding_func': torch.nn.Identity,
+                           'embedding_dict': dict(), 'feature_func': pca4.transform},
                        'peak': {
                            'embedding_func': torch.nn.Identity,
                            'embedding_dict': dict(), 'feature_func': partial(get_dataset_peaks, tstop=sim_metadata['tstop'])},

@@ -69,12 +69,12 @@ for input_type, posterior_dict in posterior_state_dicts.items():
         dist_list.append(dist)
     dist_array = np.array(dist_list)
 
-    plt.figure(figsize=(17,4))
-    for plot_idx in range(4):
-        plt.subplot(1,4,plot_idx+1)
+    plt.figure(figsize=(9,4))
+    for plot_idx in range(2):
+        plt.subplot(1,2,plot_idx+1)
         xticks = np.round(np.linspace(all_bounds[1][0], all_bounds[1][1], 10), decimals=2)
         yticks = np.round(np.linspace(all_bounds[0][0], all_bounds[0][1], 10), decimals=2)
-        sns.heatmap(dist_array[:,plot_idx].reshape(10,10,10,10)[:,:,5,5], vmin=0, vmax=0.3,
+        sns.heatmap(dist_array[:,plot_idx].reshape(10,10)[:,:], vmin=0, vmax=0.3,
                     xticklabels=xticks, yticklabels=yticks)
         plt.title(plot_labels[plot_idx])
         plt.xlabel(param_labels[1], fontsize=labelsize)
@@ -104,7 +104,7 @@ for input_type, posterior_dict in posterior_state_dicts.items():
     plt.figure(figsize=(5,5))
     xticks = np.round(np.linspace(all_bounds[1][0], all_bounds[1][1], 10), decimals=2)
     yticks = np.round(np.linspace(all_bounds[0][0], all_bounds[0][1], 10), decimals=2)
-    sns.heatmap(dist_array.reshape(10,10,10,10)[:,:,5,5], vmin=0, vmax=0.00020,
+    sns.heatmap(dist_array.reshape(10,10)[:,:], vmin=0, vmax=0.00020,
                 xticklabels=xticks, yticklabels=yticks, cmap='viridis')
     plt.title(input_type)
     plt.xlabel(param_labels[1], fontsize=labelsize)
